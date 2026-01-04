@@ -1,6 +1,8 @@
+# app_main.py
 import streamlit as st
 import json
 import random
+from auth_system import show_login_page, show_user_profile, update_user_stats, get_user_stats
 
 # Настройка страницы
 st.set_page_config(
@@ -9,7 +11,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
 
 # Загрузка данных элементов
 @st.cache_data
@@ -20,7 +21,6 @@ def load_elements():
     except FileNotFoundError:
         st.error("❌ Файл chemical_elements.json не найден!")
         return {}
-
 
 # Функция для определения цвета элемента
 def get_element_color(element_type, symbol, number):
@@ -45,165 +45,185 @@ def get_element_color(element_type, symbol, number):
         return colors.get("Актиноид", "#FFE6E6")
     return colors.get(element_type, "#F8F8FF")
 
-
-# Создание таблицы Менделеева - ИСПРАВЛЕННАЯ ВЕРСИЯ
-def create_periodic_table_layout(elements_data):
-    # Создаем таблицу 10x18 (основная + лантаноиды/актиноиды)
-    table = [[None for _ in range(18)] for _ in range(10)]
-
-    # Позиции элементов в таблице
+# Упрощенная таблица Менделеева с компактными ячейками
+def create_periodic_table_layout():
+    # Упрощенная версия с правильным расположением
+    # (period, group): symbol
     positions = {
-        # Период 1
-        1: (0, 0), 2: (0, 17),
-        # Период 2
-        3: (1, 0), 4: (1, 1), 5: (1, 12), 6: (1, 13), 7: (1, 14),
-        8: (1, 15), 9: (1, 16), 10: (1, 17),
-        # Период 3
-        11: (2, 0), 12: (2, 1), 13: (2, 12), 14: (2, 13), 15: (2, 14),
-        16: (2, 15), 17: (2, 16), 18: (2, 17),
-        # Период 4
-        19: (3, 0), 20: (3, 1), 21: (3, 2), 22: (3, 3), 23: (3, 4),
-        24: (3, 5), 25: (3, 6), 26: (3, 7), 27: (3, 8), 28: (3, 9),
-        29: (3, 10), 30: (3, 11), 31: (3, 12), 32: (3, 13), 33: (3, 14),
-        34: (3, 15), 35: (3, 16), 36: (3, 17),
-        # Период 5
-        37: (4, 0), 38: (4, 1), 39: (4, 2), 40: (4, 3), 41: (4, 4),
-        42: (4, 5), 43: (4, 6), 44: (4, 7), 45: (4, 8), 46: (4, 9),
-        47: (4, 10), 48: (4, 11), 49: (4, 12), 50: (4, 13), 51: (4, 14),
-        52: (4, 15), 53: (4, 16), 54: (4, 17),
-        # Период 6
-        55: (5, 0), 56: (5, 1),
-        # Лантаноиды (отдельная строка)
-        57: (8, 2), 58: (8, 3), 59: (8, 4), 60: (8, 5), 61: (8, 6),
-        62: (8, 7), 63: (8, 8), 64: (8, 9), 65: (8, 10), 66: (8, 11),
-        67: (8, 12), 68: (8, 13), 69: (8, 14), 70: (8, 15), 71: (8, 16),
-        # Продолжение периода 6
-        72: (5, 2), 73: (5, 3), 74: (5, 4), 75: (5, 5), 76: (5, 6),
-        77: (5, 7), 78: (5, 8), 79: (5, 9), 80: (5, 10), 81: (5, 11),
-        82: (5, 12), 83: (5, 13), 84: (5, 14), 85: (5, 15), 86: (5, 16),
-        # Период 7
-        87: (6, 0), 88: (6, 1),
-        # Актиноиды (отдельная строка)
-        89: (9, 2), 90: (9, 3), 91: (9, 4), 92: (9, 5), 93: (9, 6),
-        94: (9, 7), 95: (9, 8), 96: (9, 9), 97: (9, 10), 98: (9, 11),
-        99: (9, 12), 100: (9, 13), 101: (9, 14), 102: (9, 15), 103: (9, 16),
-        # Продолжение периода 7
-        104: (6, 2), 105: (6, 3), 106: (6, 4), 107: (6, 5), 108: (6, 6),
-        109: (6, 7), 110: (6, 8), 111: (6, 9), 112: (6, 10), 113: (6, 11),
-        114: (6, 12), 115: (6, 13), 116: (6, 14), 117: (6, 15), 118: (6, 16)
+        # Period 1
+        (0, 0): "H", (0, 17): "He",
+        # Period 2
+        (1, 0): "Li", (1, 1): "Be", (1, 12): "B", (1, 13): "C", (1, 14): "N",
+        (1, 15): "O", (1, 16): "F", (1, 17): "Ne",
+        # Period 3
+        (2, 0): "Na", (2, 1): "Mg", (2, 12): "Al", (2, 13): "Si", (2, 14): "P",
+        (2, 15): "S", (2, 16): "Cl", (2, 17): "Ar",
+        # Period 4
+        (3, 0): "K", (3, 1): "Ca", (3, 2): "Sc", (3, 3): "Ti", (3, 4): "V",
+        (3, 5): "Cr", (3, 6): "Mn", (3, 7): "Fe", (3, 8): "Co", (3, 9): "Ni",
+        (3, 10): "Cu", (3, 11): "Zn", (3, 12): "Ga", (3, 13): "Ge", (3, 14): "As",
+        (3, 15): "Se", (3, 16): "Br", (3, 17): "Kr",
+        # Period 5
+        (4, 0): "Rb", (4, 1): "Sr", (4, 2): "Y", (4, 3): "Zr", (4, 4): "Nb",
+        (4, 5): "Mo", (4, 6): "Tc", (4, 7): "Ru", (4, 8): "Rh", (4, 9): "Pd",
+        (4, 10): "Ag", (4, 11): "Cd", (4, 12): "In", (4, 13): "Sn", (4, 14): "Sb",
+        (4, 15): "Te", (4, 16): "I", (4, 17): "Xe",
+        # Period 6
+        (5, 0): "Cs", (5, 1): "Ba", 
+        # Lanthanoids will be separate
+        (5, 2): "Lu", (5, 3): "Hf", (5, 4): "Ta", (5, 5): "W", (5, 6): "Re",
+        (5, 7): "Os", (5, 8): "Ir", (5, 9): "Pt", (5, 10): "Au", (5, 11): "Hg",
+        (5, 12): "Tl", (5, 13): "Pb", (5, 14): "Bi", (5, 15): "Po", (5, 16): "At",
+        (5, 17): "Rn",
+        # Period 7
+        (6, 0): "Fr", (6, 1): "Ra",
+        # Actinoids will be separate
+        (6, 2): "Lr", (6, 3): "Rf", (6, 4): "Db", (6, 5): "Sg", (6, 6): "Bh",
+        (6, 7): "Hs", (6, 8): "Mt", (6, 9): "Ds", (6, 10): "Rg", (6, 11): "Cn",
+        (6, 12): "Nh", (6, 13): "Fl", (6, 14): "Mc", (6, 15): "Lv", (6, 16): "Ts",
+        (6, 17): "Og",
     }
+    
+    # Lanthanoids
+    lanthanoids = ["La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb"]
+    
+    # Actinoids
+    actinoids = ["Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No"]
+    
+    return positions, lanthanoids, actinoids
 
-    # Заполняем таблицу
-    for symbol, element_data in elements_data.items():
-        number = element_data["Порядковый номер"]
-        if number in positions:
-            period, group = positions[number]
-            if period < len(table) and group < len(table[period]):
-                table[period][group] = symbol
-
-    return table
-
-
-# Отображение таблицы с кликабельными ячейками
+# Отображение компактной таблицы
 def show_periodic_table(elements_data):
-    table = create_periodic_table_layout(elements_data)
-
-    # Основная таблица (периоды 0-6)
-    for period in range(7):  # 0-6 периоды
+    positions, lanthanoids, actinoids = create_periodic_table_layout()
+    
+    # Основная таблица 7x18
+    for period in range(7):
         cols = st.columns(18)
         for group in range(18):
             with cols[group]:
-                element_symbol = table[period][group] if period < len(table) and group < len(table[period]) else None
-                if element_symbol and element_symbol in elements_data:
-                    element = elements_data[element_symbol]
-                    color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
-
-                    # Создаем кликабельную ячейку
-                    button_html = f"""
-                    <div style="background-color: {color}; padding: 8px; margin: 2px; 
-                             border-radius: 8px; text-align: center; cursor: pointer;
-                             border: 2px solid #ccc; min-height: 70px; display: flex; 
-                             flex-direction: column; justify-content: center; transition: all 0.2s;"
-                         onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#666';"
-                         onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#ccc';">
-                        <div style="font-weight: bold; font-size: 18px;">{element_symbol}</div>
-                        <div style="font-size: 11px; color: #666;">{element['Порядковый номер']}</div>
-                        <div style="font-size: 10px; color: #888; margin-top: 2px;">{element['Название'][:10]}{'...' if len(element['Название']) > 10 else ''}</div>
-                    </div>
-                    """
-
-                    if st.button(" ", key=f"btn_{element_symbol}_{period}_{group}",
-                                 help=f"Нажмите для информации о {element['Название']}",
-                                 use_container_width=True):
-                        st.session_state.selected_element = element_symbol
-
-                    st.markdown(button_html, unsafe_allow_html=True)
+                if (period, group) in positions:
+                    element_symbol = positions[(period, group)]
+                    if element_symbol in elements_data:
+                        element = elements_data[element_symbol]
+                        color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
+                        
+                        # КОМПАКТНЫЕ ячейки - уменьшенная высота
+                        button_html = f"""
+                        <div style="
+                            background-color: {color}; 
+                            padding: 4px; 
+                            margin: 1px; 
+                            border-radius: 6px; 
+                            text-align: center; 
+                            cursor: pointer;
+                            border: 1px solid #ccc; 
+                            height: 65px; 
+                            display: flex; 
+                            flex-direction: column; 
+                            justify-content: center;
+                            transition: all 0.2s;"
+                            onmouseover="this.style.transform='scale(1.03)'; this.style.borderColor='#666';"
+                            onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#ccc';">
+                            <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{element_symbol}</div>
+                            <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
+                            <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
+                                {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
+                            </div>
+                        </div>
+                        """
+                        
+                        if st.button(" ", key=f"btn_{element_symbol}_{period}_{group}",
+                                    help=f"Нажмите для информации о {element['Название']}",
+                                    use_container_width=True):
+                            st.session_state.selected_element = element_symbol
+                        
+                        st.markdown(button_html, unsafe_allow_html=True)
+                    else:
+                        st.write("")
                 else:
-                    st.write("")
-
-    # Лантаноиды (отдельная строка)
+                    # Пустая ячейка
+                    st.markdown('<div style="height: 65px;"></div>', unsafe_allow_html=True)
+    
+    # Лантаноиды - компактный вид
     st.markdown("---")
-    st.write("**Лантаноиды:**")
-    lanthanoid_cols = st.columns(15)
-    for i in range(15):  # 15 лантаноидов
-        with lanthanoid_cols[i]:
-            element_symbol = table[8][i + 2] if 8 < len(table) and i + 2 < len(table[8]) else None
-            if element_symbol and element_symbol in elements_data:
-                element = elements_data[element_symbol]
-                color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
-
+    st.markdown("**Лантаноиды:**")
+    lan_cols = st.columns(14)
+    for i, symbol in enumerate(lanthanoids):
+        with lan_cols[i]:
+            if symbol in elements_data:
+                element = elements_data[symbol]
+                color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
+                
                 button_html = f"""
-                <div style="background-color: {color}; padding: 8px; margin: 2px; 
-                         border-radius: 8px; text-align: center; cursor: pointer;
-                         border: 2px solid #ccc; min-height: 70px; display: flex; 
-                         flex-direction: column; justify-content: center; transition: all 0.2s;"
-                     onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#666';"
-                     onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#ccc';">
-                    <div style="font-weight: bold; font-size: 18px;">{element_symbol}</div>
-                    <div style="font-size: 11px; color: #666;">{element['Порядковый номер']}</div>
-                    <div style="font-size: 10px; color: #888; margin-top: 2px;">{element['Название'][:10]}{'...' if len(element['Название']) > 10 else ''}</div>
+                <div style="
+                    background-color: {color}; 
+                    padding: 4px; 
+                    margin: 1px; 
+                    border-radius: 6px; 
+                    text-align: center; 
+                    cursor: pointer;
+                    border: 1px solid #ccc; 
+                    height: 65px; 
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: center;"
+                    onmouseover="this.style.transform='scale(1.03)'; this.style.borderColor='#666';"
+                    onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#ccc';">
+                    <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{symbol}</div>
+                    <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
+                    <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
+                        {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
+                    </div>
                 </div>
                 """
-
-                if st.button(" ", key=f"lanth_{element_symbol}",
-                             help=f"Нажмите для информации о {element['Название']}",
-                             use_container_width=True):
-                    st.session_state.selected_element = element_symbol
-
+                
+                if st.button(" ", key=f"lanth_{symbol}",
+                            help=f"Нажмите для информации о {element['Название']}",
+                            use_container_width=True):
+                    st.session_state.selected_element = symbol
+                
                 st.markdown(button_html, unsafe_allow_html=True)
-
-    # Актиноиды (отдельная строка)
-    st.write("**Актиноиды:**")
-    actinoid_cols = st.columns(15)
-    for i in range(15):  # 15 актиноидов
-        with actinoid_cols[i]:
-            element_symbol = table[9][i + 2] if 9 < len(table) and i + 2 < len(table[9]) else None
-            if element_symbol and element_symbol in elements_data:
-                element = elements_data[element_symbol]
-                color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
-
+    
+    # Актиноиды - компактный вид
+    st.markdown("**Актиноиды:**")
+    act_cols = st.columns(14)
+    for i, symbol in enumerate(actinoids):
+        with act_cols[i]:
+            if symbol in elements_data:
+                element = elements_data[symbol]
+                color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
+                
                 button_html = f"""
-                <div style="background-color: {color}; padding: 8px; margin: 2px; 
-                         border-radius: 8px; text-align: center; cursor: pointer;
-                         border: 2px solid #ccc; min-height: 70px; display: flex; 
-                         flex-direction: column; justify-content: center; transition: all 0.2s;"
-                     onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='#666';"
-                     onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#ccc';">
-                    <div style="font-weight: bold; font-size: 18px;">{element_symbol}</div>
-                    <div style="font-size: 11px; color: #666;">{element['Порядковый номер']}</div>
-                    <div style="font-size: 10px; color: #888; margin-top: 2px;">{element['Название'][:10]}{'...' if len(element['Название']) > 10 else ''}</div>
+                <div style="
+                    background-color: {color}; 
+                    padding: 4px; 
+                    margin: 1px; 
+                    border-radius: 6px; 
+                    text-align: center; 
+                    cursor: pointer;
+                    border: 1px solid #ccc; 
+                    height: 65px; 
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: center;"
+                    onmouseover="this.style.transform='scale(1.03)'; this.style.borderColor='#666';"
+                    onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#ccc';">
+                    <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{symbol}</div>
+                    <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
+                    <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
+                        {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
+                    </div>
                 </div>
                 """
-
-                if st.button(" ", key=f"actin_{element_symbol}",
-                             help=f"Нажмите для информации о {element['Название']}",
-                             use_container_width=True):
-                    st.session_state.selected_element = element_symbol
-
+                
+                if st.button(" ", key=f"actin_{symbol}",
+                            help=f"Нажмите для информации о {element['Название']}",
+                            use_container_width=True):
+                    st.session_state.selected_element = symbol
+                
                 st.markdown(button_html, unsafe_allow_html=True)
 
-
-# Отображение информации об элементе
+# Отображение информации об элементе (без изменений)
 def show_element_info(element_symbol, elements_data):
     if element_symbol not in elements_data:
         return
@@ -236,26 +256,28 @@ def show_element_info(element_symbol, elements_data):
 
         st.write(f"**🔹 Электронная конфигурация:** `{element['Электронная конфигурация']}`")
 
-
-# Режим тестирования
+# Режим тестирования с сохранением статистики
 def show_test_mode(elements_data):
     st.header("🎯 Проверь свои знания")
-
+    
+    # Инициализация сессии для теста
     if 'test_data' not in st.session_state:
         st.session_state.test_data = {
             'score': 0,
             'total': 0,
-            'current_question': None
+            'current_question': None,
+            'current_level': None
         }
-
+    
     level = st.radio(
         "**Выберите уровень сложности:**",
         ["🟢 Лёгкий", "🟡 Средний", "🔴 Сложный"],
         horizontal=True
     )
-
+    
     level_key = level.split()[1]
-
+    st.session_state.test_data['current_level'] = level_key
+    
     col1, col2 = st.columns([1, 3])
     with col1:
         if st.button("🎲 Новый вопрос", use_container_width=True):
@@ -292,42 +314,52 @@ def show_test_mode(elements_data):
                 'correct': correct_answer,
                 'element': element_symbol
             }
-
+            st.rerun()
+    
     if st.session_state.test_data['current_question']:
         question_data = st.session_state.test_data['current_question']
-
+        
         st.markdown(f"### ❓ {question_data['question']}")
-
+        
         selected_option = st.radio(
             "**Выберите ответ:**",
             question_data['options'],
             key="current_options"
         )
-
+        
         col1, col2 = st.columns(2)
         with col1:
             if st.button("✅ Проверить ответ", use_container_width=True):
                 st.session_state.test_data['total'] += 1
-
+                
                 if selected_option == question_data['correct']:
                     st.success("🎉 **Правильно!** Молодец!")
                     st.session_state.test_data['score'] += 1
                     st.balloons()
+                    
+                    # Сохраняем статистику для зарегистрированных пользователей
+                    if st.session_state.get("username") and st.session_state["username"] != "Гость":
+                        update_user_stats(st.session_state["username"], 1, 1)
                 else:
                     st.error(f"❌ **Неправильно!** Правильный ответ: **{question_data['correct']}**")
-
+                    
+                    # Сохраняем статистику для зарегистрированных пользователей
+                    if st.session_state.get("username") and st.session_state["username"] != "Гость":
+                        update_user_stats(st.session_state["username"], 0, 1)
+                
                 st.markdown("---")
                 show_element_info(question_data['element'], elements_data)
-
+        
         with col2:
             if st.button("➡️ Следующий вопрос", use_container_width=True):
                 st.session_state.test_data['current_question'] = None
                 st.rerun()
-
+    
+    # Отображение статистики
     if st.session_state.test_data['total'] > 0:
         st.markdown("---")
-        st.subheader("📈 Статистика")
-
+        st.subheader("📈 Статистика текущей сессии")
+        
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Правильных ответов", st.session_state.test_data['score'])
@@ -336,33 +368,61 @@ def show_test_mode(elements_data):
         with col3:
             percentage = (st.session_state.test_data['score'] / st.session_state.test_data['total']) * 100
             st.metric("Успеваемость", f"{percentage:.1f}%")
-
-        if st.button("🔄 Сбросить статистику"):
+        
+        # Показать общую статистику пользователя, если он зарегистрирован
+        if st.session_state.get("username") and st.session_state["username"] != "Гость":
+            user_stats = get_user_stats(st.session_state["username"])
+            if user_stats and user_stats["total_questions"] > 0:
+                st.markdown("---")
+                st.subheader("📊 Общая статистика аккаунта")
+                
+                total_percentage = (user_stats["correct_answers"] / user_stats["total_questions"]) * 100
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Всего правильных", user_stats["correct_answers"])
+                with col2:
+                    st.metric("Всего вопросов", user_stats["total_questions"])
+                with col3:
+                    st.metric("Общая успеваемость", f"{total_percentage:.1f}%")
+        
+        if st.button("🔄 Сбросить статистику сессии"):
             st.session_state.test_data = {
                 'score': 0,
                 'total': 0,
-                'current_question': None
+                'current_question': None,
+                'current_level': None
             }
             st.rerun()
 
-
 # Основная функция
 def main():
+    # Проверка авторизации
+    if "logged_in" not in st.session_state:
+        show_login_page()
+        return
+    
+    # Загрузка данных элементов
     elements_data = load_elements()
-
+    
     if not elements_data:
+        st.error("❌ Не удалось загрузить данные элементов")
         st.stop()
-
+    
+    # Отображение основного интерфейса
     st.title("🧪 Химический справочник")
-    st.markdown("**Интерактивная таблица Менделеева со всеми 118 элементами**")
-
+    st.markdown(f"**Добро пожаловать, {st.session_state['username']}!**")
+    
+    # Показ профиля в сайдбаре
+    show_user_profile()
+    
     with st.sidebar:
+        st.markdown("---")
         st.header("🧭 Навигация")
         app_mode = st.radio(
             "**Выберите режим:**",
             ["📚 Изучение таблицы", "🎯 Проверка знаний"]
         )
-
+        
         st.markdown("---")
         st.header("ℹ️ О проекте")
         st.markdown("""
@@ -370,23 +430,26 @@ def main():
         - 📚 Изучение свойств
         - 🎯 Проверка знаний  
         - 🎨 Кликабельные ячейки
-        - 📱 Адаптивный дизайн
+        - 👤 Система пользователей
+        - 📊 Сохранение статистики
         """)
-
+        
         total_elements = len(elements_data)
         st.metric("Элементов в базе", total_elements)
-
+        
+        if st.session_state.get("username") == "Гость":
+            st.warning("⚠️ Вы вошли как гость. Статистика не сохраняется.")
+    
     if app_mode == "📚 Изучение таблицы":
         show_periodic_table(elements_data)
-
+        
         if 'selected_element' in st.session_state and st.session_state.selected_element:
             show_element_info(st.session_state.selected_element, elements_data)
         else:
             st.info("👆 **Нажмите на любой элемент в таблице, чтобы увидеть его свойства**")
-
+    
     else:
         show_test_mode(elements_data)
-
 
 if __name__ == "__main__":
     main()
