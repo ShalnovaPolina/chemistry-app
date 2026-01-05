@@ -224,6 +224,7 @@ def show_periodic_table(elements_data):
                 st.markdown(button_html, unsafe_allow_html=True)
 
 # Отображение информации об элементе (без изменений)
+# Отображение информации об элементе - НОВАЯ ВЕРСИЯ
 def show_element_info(element_symbol, elements_data):
     if element_symbol not in elements_data:
         return
@@ -231,31 +232,93 @@ def show_element_info(element_symbol, elements_data):
     element = elements_data[element_symbol]
 
     st.markdown("---")
-    col1, col2 = st.columns([1, 2])
+    
+    # Три колонки вместо двух
+    col1, col2, col3 = st.columns([1, 1, 1])
 
     with col1:
         st.markdown(f"# {element_symbol}")
         st.markdown(f"## {element['Название']}")
+        st.markdown("---")
 
-        st.metric("Порядковый номер", element["Порядковый номер"])
-        st.metric("Атомная масса", f"{element['Атомная масса']:.3f}")
-        st.metric("Тип элемента", element["Тип элемента"])
+        st.metric("**Порядковый номер**", element["Порядковый номер"])
+        st.metric("**Атомная масса**", f"{element['Атомная масса']:.3f}")
+        st.metric("**Тип элемента**", element["Тип элемента"])
 
     with col2:
         st.subheader("📊 Свойства элемента")
+        st.markdown("---")
+        
+        # Валентность
+        valency = element.get('Валентность', [])
+        if valency:
+            valency_str = ', '.join(map(str, valency))
+            st.markdown(f"**🔹 Валентность:** {valency_str}")
+        else:
+            st.markdown("**🔹 Валентность:** не указана")
+        
+        # Степень окисления
+        oxidation = element.get('Степень окисления', [])
+        if oxidation:
+            oxidation_str = ', '.join(oxidation)
+            st.markdown(f"**🔹 Степень окисления:** {oxidation_str}")
+        else:
+            st.markdown("**🔹 Степень окисления:** не указана")
+        
+        # Электронная конфигурация
+        electron_config = element.get('Электронная конфигурация', '')
+        if electron_config:
+            st.markdown(f"**🔹 Электронная конфигурация:**")
+            st.code(electron_config)
+        else:
+            st.markdown("**🔹 Электронная конфигурация:** не указана")
 
-        info_cols = st.columns(2)
-        with info_cols[0]:
-            st.write(f"**🔹 Валентность:** {', '.join(map(str, element['Валентность']))}")
-            st.write(f"**🔹 Агрегатное состояние:** {element['Агрегатное состояние']}")
-            st.write(f"**🔹 Внешний вид:** {element['Внешний вид']}")
-
-        with info_cols[1]:
-            st.write(f"**🔹 Степень окисления:** {', '.join(element['Степень окисления'])}")
-            st.write(f"**🔹 Характер оксида:** {element['Характер оксида']}")
-
-        st.write(f"**🔹 Электронная конфигурация:** `{element['Электронная конфигурация']}`")
-
+    with col3:
+        st.subheader("🧪 Свойства вещества")
+        st.markdown("---")
+        
+        # Агрегатное состояние
+        state = element.get('Агрегатное состояние', '')
+        if state:
+            # Иконки для разных состояний
+            state_icon = ""
+            if "газ" in state.lower():
+                state_icon = "💨"
+            elif "жидк" in state.lower():
+                state_icon = "💧"
+            elif "тверд" in state.lower():
+                state_icon = "🧊"
+            elif "крист" in state.lower():
+                state_icon = "✨"
+                
+            st.markdown(f"**🔹 Агрегатное состояние:** {state_icon} {state}")
+        else:
+            st.markdown("**🔹 Агрегатное состояние:** не указано")
+        
+        # Внешний вид
+        appearance = element.get('Внешний вид', '')
+        if appearance:
+            st.markdown(f"**🔹 Внешний вид:** {appearance}")
+        else:
+            st.markdown("**🔹 Внешний вид:** не указан")
+        
+        # Характер оксида
+        oxide_nature = element.get('Характер оксида', '')
+        if oxide_nature and oxide_nature.strip() and oxide_nature.lower() not in ['нет', 'отсутствует', 'не образует', 'unknown', '']:
+            # Определяем иконку по характеру оксида
+            oxide_icon = ""
+            if "амфотер" in oxide_nature.lower():
+                oxide_icon = "⚖️"
+            elif "кислот" in oxide_nature.lower():
+                oxide_icon = "🧪"
+            elif "основ" in oxide_nature.lower():
+                oxide_icon = "🛡️"
+            elif "нейтр" in oxide_nature.lower():
+                oxide_icon = "⚪"
+                
+            st.markdown(f"**🔹 Характер оксида:** {oxide_icon} {oxide_nature}")
+        else:
+            st.markdown("**🔹 Характер оксида:** не образует оксидов")
 # Режим тестирования с сохранением статистики
 def show_test_mode(elements_data):
     st.header("🎯 Проверь свои знания")
@@ -453,3 +516,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
