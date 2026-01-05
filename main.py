@@ -223,8 +223,7 @@ def show_periodic_table(elements_data):
                 
                 st.markdown(button_html, unsafe_allow_html=True)
 
-# Отображение информации об элементе (без изменений)
-# Отображение информации об элементе - НОВАЯ ВЕРСИЯ
+# Отображение информации об элементе - ОБНОВЛЕННАЯ ВЕРСИЯ
 def show_element_info(element_symbol, elements_data):
     if element_symbol not in elements_data:
         return
@@ -233,7 +232,7 @@ def show_element_info(element_symbol, elements_data):
 
     st.markdown("---")
     
-    # Три колонки вместо двух
+    # Три колонки
     col1, col2, col3 = st.columns([1, 1, 1])
 
     with col1:
@@ -241,84 +240,215 @@ def show_element_info(element_symbol, elements_data):
         st.markdown(f"## {element['Название']}")
         st.markdown("---")
 
-        st.metric("**Порядковый номер**", element["Порядковый номер"])
-        st.metric("**Атомная масса**", f"{element['Атомная масса']:.3f}")
-        st.metric("**Тип элемента**", element["Тип элемента"])
+        # Порядковый номер с иконкой
+        st.markdown(f"**🔢 Порядковый номер:** {element['Порядковый номер']}")
+        
+        # Атомная масса с округлением
+        atomic_mass = element['Атомная масса']
+        if isinstance(atomic_mass, (int, float)):
+            if atomic_mass == int(atomic_mass):
+                mass_display = f"{int(atomic_mass)}"
+            else:
+                mass_display = f"{atomic_mass:.3f}"
+        else:
+            mass_display = str(atomic_mass)
+        st.markdown(f"**⚖️ Атомная масса:** {mass_display}")
+        
+        # Тип элемента с иконкой
+        element_type = element['Тип элемента']
+        type_icon = "⚪"
+        if "металл" in element_type.lower():
+            if "щелоч" in element_type.lower():
+                type_icon = "🟡"
+            elif "благород" in element_type.lower():
+                type_icon = "🟣"
+            else:
+                type_icon = "🟠"
+        elif "неметалл" in element_type.lower():
+            type_icon = "🟢"
+        elif "полуметалл" in element_type.lower():
+            type_icon = "🔵"
+        elif "благородный газ" in element_type.lower():
+            type_icon = "🟣"
+        
+        st.markdown(f"**{type_icon} Тип элемента:** {element_type}")
 
     with col2:
         st.subheader("📊 Свойства элемента")
         st.markdown("---")
         
-        # Валентность
+        # Валентность с проверкой
         valency = element.get('Валентность', [])
-        if valency:
-            valency_str = ', '.join(map(str, valency))
-            st.markdown(f"**🔹 Валентность:** {valency_str}")
+        if valency and valency[0] not in ["-", "", "0", 0]:
+            # Фильтруем некорректные значения
+            valid_valencies = [str(v) for v in valency if v not in ["-", ""] and str(v).strip()]
+            if valid_valencies:
+                valency_str = ', '.join(valid_valencies)
+                st.markdown(f"**🔸 Валентность:** {valency_str}")
+            else:
+                st.markdown("**🔸 Валентность:** не указана")
         else:
-            st.markdown("**🔹 Валентность:** не указана")
+            if valency and valency[0] in ["0", 0]:
+                st.markdown("**🔸 Валентность:** 0 (инертный)")
+            else:
+                st.markdown("**🔸 Валентность:** не указана")
         
-        # Степень окисления
+        # Степень окисления с цветовой маркировкой
         oxidation = element.get('Степень окисления', [])
         if oxidation:
-            oxidation_str = ', '.join(oxidation)
-            st.markdown(f"**🔹 Степень окисления:** {oxidation_str}")
+            # Разделяем на положительные и отрицательные
+            positive = []
+            negative = []
+            neutral = []
+            
+            for ox in oxidation:
+                ox_str = str(ox).strip()
+                if ox_str.startswith('+'):
+                    positive.append(ox_str)
+                elif ox_str.startswith('-'):
+                    negative.append(ox_str)
+                elif ox_str == '0':
+                    neutral.append(ox_str)
+                else:
+                    # Если нет знака, но число
+                    try:
+                        num = float(ox_str)
+                        if num > 0:
+                            positive.append(f"+{int(num) if num.is_integer() else num}")
+                        elif num < 0:
+                            negative.append(str(num))
+                        else:
+                            neutral.append("0")
+                    except:
+                        positive.append(ox_str)
+            
+            oxidation_display = []
+            if negative:
+                oxidation_display.append(f"<span style='color:red'>{', '.join(negative)}</span>")
+            if positive:
+                oxidation_display.append(f"<span style='color:blue'>{', '.join(positive)}</span>")
+            if neutral:
+                oxidation_display.append(f"<span style='color:green'>{', '.join(neutral)}</span>")
+            
+            if oxidation_display:
+                st.markdown(f"**🔸 Степень окисления:** {'; '.join(oxidation_display)}", unsafe_allow_html=True)
+            else:
+                st.markdown(f"**🔸 Степень окисления:** {', '.join(oxidation)}")
         else:
-            st.markdown("**🔹 Степень окисления:** не указана")
+            st.markdown("**🔸 Степень окисления:** не указана")
         
-        # Электронная конфигурация
+        # Электронная конфигурация с форматированием
         electron_config = element.get('Электронная конфигурация', '')
         if electron_config:
-            st.markdown(f"**🔹 Электронная конфигурация:**")
-            st.code(electron_config)
+            st.markdown(f"**🔸 Электронная конфигурация:**")
+            # Форматируем верхние индексы
+            formatted_config = electron_config
+            # Заменяем цифры в верхнем регистре на верхние индекты
+            for i in range(10):
+                formatted_config = formatted_config.replace(f"{i}", f"<sup>{i}</sup>")
+            
+            st.markdown(f"`{formatted_config}`", unsafe_allow_html=True)
         else:
-            st.markdown("**🔹 Электронная конфигурация:** не указана")
+            st.markdown("**🔸 Электронная конфигурация:** не указана")
 
     with col3:
         st.subheader("🧪 Свойства вещества")
         st.markdown("---")
         
-        # Агрегатное состояние
+        # Агрегатное состояние с иконками
         state = element.get('Агрегатное состояние', '')
         if state:
-            # Иконки для разных состояний
-            state_icon = ""
-            if "газ" in state.lower():
+            state_lower = state.lower()
+            state_icon = "❓"
+            
+            if "газ" in state_lower or "газов" in state_lower:
                 state_icon = "💨"
-            elif "жидк" in state.lower():
+            elif "жидк" in state_lower or "жидко" in state_lower:
                 state_icon = "💧"
-            elif "тверд" in state.lower():
+            elif "тверд" in state_lower or "твердо" in state_lower:
                 state_icon = "🧊"
-            elif "крист" in state.lower():
+            elif "крист" in state_lower:
                 state_icon = "✨"
-                
-            st.markdown(f"**🔹 Агрегатное состояние:** {state_icon} {state}")
+            elif "плазм" in state_lower:
+                state_icon = "⚡"
+            
+            # Проверяем уточнение про комнатную температуру
+            if "комнат" in state_lower or "стандарт" in state_lower:
+                state_display = state
+            else:
+                # Добавляем уточнение для некоторых элементов
+                if element_symbol in ["Br", "Hg"]:
+                    state_display = f"{state} (при комнатной температуре)"
+                else:
+                    state_display = state
+            
+            st.markdown(f"**🔹 {state_icon} Агрегатное состояние:** {state_display}")
         else:
             st.markdown("**🔹 Агрегатное состояние:** не указано")
         
         # Внешний вид
         appearance = element.get('Внешний вид', '')
         if appearance:
+            # Исправляем описание висмута
+            if element_symbol == "Bi" and "розоватым оттенком" in appearance:
+                appearance = appearance.replace("оттенком", "отливом")
+            
             st.markdown(f"**🔹 Внешний вид:** {appearance}")
         else:
             st.markdown("**🔹 Внешний вид:** не указан")
         
-        # Характер оксида
+        # Характер оксида с иконками
         oxide_nature = element.get('Характер оксида', '')
-        if oxide_nature and oxide_nature.strip() and oxide_nature.lower() not in ['нет', 'отсутствует', 'не образует', 'unknown', '']:
-            # Определяем иконку по характеру оксида
-            oxide_icon = ""
-            if "амфотер" in oxide_nature.lower():
+        if oxide_nature and oxide_nature.strip():
+            oxide_lower = oxide_nature.lower()
+            oxide_icon = "❓"
+            
+            if "не образует" in oxide_lower or "отсутствует" in oxide_lower:
+                oxide_icon = "🚫"
+            elif "амфотер" in oxide_lower:
                 oxide_icon = "⚖️"
-            elif "кислот" in oxide_nature.lower():
+            elif "кислот" in oxide_lower:
                 oxide_icon = "🧪"
-            elif "основ" in oxide_nature.lower():
+            elif "основ" in oxide_lower:
                 oxide_icon = "🛡️"
-            elif "нейтр" in oxide_nature.lower():
+            elif "нейтр" in oxide_lower:
                 oxide_icon = "⚪"
-                
-            st.markdown(f"**🔹 Характер оксида:** {oxide_icon} {oxide_nature}")
+            elif "особый" in oxide_lower or "компонент" in oxide_lower:
+                oxide_icon = "⚠️"
+            elif "предположительно" in oxide_lower:
+                oxide_icon = "❔"
+            elif "зависит" in oxide_lower:
+                oxide_icon = "🔄"
+            
+            # Для благородных газов - особый стиль
+            if element_symbol in ["He", "Ne", "Ar", "Kr", "Xe", "Rn", "Og"]:
+                if "не образует" in oxide_lower:
+                    st.markdown(f"**🔹 🚫 Характер оксида:** {oxide_nature}")
+                else:
+                    st.markdown(f"**🔹 {oxide_icon} Характер оксида:** {oxide_nature}")
+            else:
+                st.markdown(f"**🔹 {oxide_icon} Характер оксида:** {oxide_nature}")
         else:
-            st.markdown("**🔹 Характер оксида:** не образует оксидов")
+            st.markdown("**🔹 Характер оксида:** не указан")
+    
+    # Дополнительная информация (если нужно)
+    st.markdown("---")
+    
+    # Проверка согласованности данных
+    if "предположительно" in element.get('Характер оксида', '').lower():
+        st.info("💡 *Характер оксида предположительный, так как элемент синтетический или малоизучен*")
+    
+    # Особые случаи
+    special_cases = {
+        "O": "Кислород является компонентом оксидов, сам по себе не имеет характера оксида",
+        "F": "Фтор образует только OF₂, который является нетипичным оксидом",
+        "H": "Вода (H₂O) не является типичным оксидом",
+        "Xe": "Ксенон может образовывать оксиды в исключительных условиях",
+        "Rn": "Радон радиоактивен, его оксиды практически не изучены"
+    }
+    
+    if element_symbol in special_cases:
+        st.warning(f"📝 **Примечание:** {special_cases[element_symbol]}")
 # Режим тестирования с сохранением статистики
 def show_test_mode(elements_data):
     st.header("🎯 Проверь свои знания")
@@ -516,4 +646,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
