@@ -19,7 +19,7 @@ SCOPE = [
 SPREADSHEET_ID = "16eAX7om2gzcttvDGUMKa_xwOSwsowOq7QOiLH01zI2k"
 
 # 3. Название листа (вкладки) в таблице
-SHEET_NAME = "Пользователи"
+SHEET_NAME = "Лист1"
 
 # ==================== ФУНКЦИИ ДЛЯ РАБОТЫ С GOOGLE SHEETS ====================
 
