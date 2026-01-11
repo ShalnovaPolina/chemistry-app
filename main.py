@@ -223,7 +223,7 @@ def show_periodic_table(elements_data):
                 
                 st.markdown(button_html, unsafe_allow_html=True)
 
-# Отображение информации об элементе - ОБНОВЛЕННАЯ ВЕРСИЯ
+# Отображение информации об элементе
 def show_element_info(element_symbol, elements_data):
     if element_symbol not in elements_data:
         return
@@ -646,5 +646,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
