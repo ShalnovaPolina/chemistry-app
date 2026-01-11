@@ -2,7 +2,7 @@
 import streamlit as st
 import json
 import random
-from auth_system import show_login_page, show_user_profile, update_user_stats, get_user_stats
+from auth_system_gsheets import show_login_page, show_user_profile, update_user_stats, get_user_stats
 
 # Настройка страницы
 st.set_page_config(
@@ -646,6 +646,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
