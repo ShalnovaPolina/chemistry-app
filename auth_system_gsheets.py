@@ -16,7 +16,7 @@ SCOPE = [
 
 # 2. ID вашей Google таблицы (ЗАМЕНИТЕ НА СВОЙ!)
 # Как найти: откройте таблицу → адресная строка → часть между /d/ и /edit
-SPREADSHEET_ID = "ВАШ_ID_ТАБЛИЦЫ_ЗДЕСЬ"
+SPREADSHEET_ID = "16eAX7om2gzcttvDGUMKa_xwOSwsowOq7QOiLH01zI2k"
 
 # 3. Название листа (вкладки) в таблице
 SHEET_NAME = "Пользователи"
