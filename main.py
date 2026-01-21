@@ -344,7 +344,7 @@ def show_element_info(element_symbol, elements_data):
             formatted_config = electron_config
             # Заменяем цифры в верхнем регистре на верхние индексы
             for i in range(10):
-                formatted_config = formatted_config.replace(f"{i}", f"<sup>{i}</sup>")
+                formatted_config = formatted_config.replace(f"{i}", f"{i}")
             
             st.markdown(f"`{formatted_config}`", unsafe_allow_html=True)
         else:
@@ -644,6 +644,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
