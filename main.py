@@ -47,8 +47,6 @@ def get_element_color(element_type, symbol, number):
 
 # Упрощенная таблица Менделеева с компактными ячейками
 def create_periodic_table_layout():
-    # Упрощенная версия с правильным расположением
-    # (period, group): symbol
     positions = {
         # Period 1
         (0, 0): "H", (0, 17): "He",
@@ -646,6 +644,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
