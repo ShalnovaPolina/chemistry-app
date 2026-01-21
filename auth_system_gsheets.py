@@ -266,11 +266,6 @@ def show_login_page():
         login_username = st.text_input("Имя пользователя", key="login_user")
         login_password = st.text_input("Пароль", type="password", key="login_pass")
         
-        # Тестовый аккаунт
-        if st.button("🧪 Быстрый вход (demo/demo)", use_container_width=True):
-            login_username = "demo"
-            login_password = "demo"
-        
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
             if st.button("🚪 Войти", use_container_width=True):
