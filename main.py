@@ -398,7 +398,7 @@ def show_element_info(element_symbol, elements_data):
                 mass_display = f"{atomic_mass:.3f}"
         else:
             mass_display = str(atomic_mass)
-        st.markdown(f"**⚖️ Атомная масса:** {mass_display}")
+        st.markdown(f"**⚖️ Относительная атомная масса:** {mass_display}")
         
         # Тип элемента с иконкой
         element_type = element['Тип элемента']
@@ -792,6 +792,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
