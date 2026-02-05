@@ -80,6 +80,7 @@ def create_periodic_table_layout():
 
 # Отображение компактной таблицы - ИЗМЕНЕНА
 # Отображение компактной таблицы - ИСПРАВЛЕННАЯ ВЕРСИЯ
+# Отображение компактной таблицы - ИСПРАВЛЕННАЯ ВЕРСИЯ С КОМПАКТНЫМИ КНОПКАМИ
 def show_periodic_table(elements_data):
     positions, lanthanoids, actinoids = create_periodic_table_layout()
     
@@ -94,47 +95,74 @@ def show_periodic_table(elements_data):
                         element = elements_data[element_symbol]
                         color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
                         
-                        # Создаем стилизованную кнопку
-                        button_label = f"**{element_symbol}**\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}"
+                        # Используем HTML для создания ячейки, а поверх нее - невидимую кнопку
+                        # Создаем контейнер с ячейкой
+                        cell_html = f"""
+                        <div id="cell_{element_symbol}_{period}_{group}" style="
+                            position: relative;
+                            background-color: {color}; 
+                            padding: 4px; 
+                            margin: 1px; 
+                            border-radius: 6px; 
+                            text-align: center;
+                            border: 1px solid #ccc; 
+                            height: 65px; 
+                            display: flex; 
+                            flex-direction: column; 
+                            justify-content: center;
+                            transition: all 0.2s;">
+                            <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{element_symbol}</div>
+                            <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
+                            <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
+                                {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
+                            </div>
+                        </div>
+                        """
                         
-                        # Используем кнопку с кастомным CSS
+                        # Отображаем ячейку
+                        st.markdown(cell_html, unsafe_allow_html=True)
+                        
+                        # Создаем невидимую кнопку поверх ячейки
+                        button_style = f"""
+                        <style>
+                        #cell_{element_symbol}_{period}_{group}:hover {{
+                            transform: scale(1.03);
+                            border-color: #666;
+                            cursor: pointer;
+                        }}
+                        </style>
+                        """
+                        st.markdown(button_style, unsafe_allow_html=True)
+                        
+                        # Невидимая кнопка, которая покрывает всю ячейку
+                        # Размещаем ее в отдельном контейнере с абсолютным позиционированием
                         if st.button(
-                            button_label,
+                            "",
                             key=f"btn_{element_symbol}_{period}_{group}",
                             help=f"Нажмите для информации о {element['Название']}",
-                            use_container_width=True
+                            type="secondary"
                         ):
                             st.session_state.selected_element = element_symbol
                             st.rerun()
                         
-                        # Применяем стили к кнопке
+                        # Стилизуем кнопку, чтобы она была невидимой и покрывала ячейку
                         st.markdown(f"""
                         <style>
-                        div[data-testid="column"]:nth-child({group+1}) button[kind="secondary"][data-testid="baseButton-secondary"] {{
-                            background-color: {color} !important;
-                            border: 1px solid #ccc !important;
-                            color: black !important;
+                        div[data-testid="column"] div[data-testid="stVerticalBlock"] div[data-testid="stButton"] button[kind="secondary"][data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"] {{
+                            position: absolute !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            width: 100% !important;
                             height: 65px !important;
-                            padding: 4px !important;
-                            margin: 1px !important;
-                            border-radius: 6px !important;
-                            text-align: center !important;
-                            font-weight: normal !important;
-                            font-size: 14px !important;
-                            line-height: 1.2 !important;
-                            white-space: pre-wrap !important;
-                            transition: all 0.2s !important;
-                        }}
-                        div[data-testid="column"]:nth-child({group+1}) button[kind="secondary"][data-testid="baseButton-secondary"]:hover {{
-                            transform: scale(1.03) !important;
-                            border-color: #666 !important;
-                        }}
-                        div[data-testid="column"]:nth-child({group+1}) button[kind="secondary"][data-testid="baseButton-secondary"]:active {{
-                            border-color: #FF0000 !important;
-                            box-shadow: 0 0 8px rgba(255,0,0,0.5) !important;
+                            opacity: 0 !important;
+                            z-index: 10 !important;
+                            padding: 0 !important;
+                            margin: 0 !important;
+                            cursor: pointer !important;
                         }}
                         </style>
                         """, unsafe_allow_html=True)
+                        
                     else:
                         st.write("")
                 else:
@@ -151,34 +179,68 @@ def show_periodic_table(elements_data):
                 element = elements_data[symbol]
                 color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
                 
-                button_label = f"**{symbol}**\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}"
+                # Создаем контейнер с ячейкой
+                cell_html = f"""
+                <div id="cell_lanth_{symbol}" style="
+                    position: relative;
+                    background-color: {color}; 
+                    padding: 4px; 
+                    margin: 1px; 
+                    border-radius: 6px; 
+                    text-align: center;
+                    border: 1px solid #ccc; 
+                    height: 65px; 
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    transition: all 0.2s;">
+                    <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{symbol}</div>
+                    <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
+                    <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
+                        {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
+                    </div>
+                </div>
+                """
                 
+                # Отображаем ячейку
+                st.markdown(cell_html, unsafe_allow_html=True)
+                
+                # Стиль для hover эффекта
+                button_style = f"""
+                <style>
+                #cell_lanth_{symbol}:hover {{
+                    transform: scale(1.03);
+                    border-color: #666;
+                    cursor: pointer;
+                }}
+                </style>
+                """
+                st.markdown(button_style, unsafe_allow_html=True)
+                
+                # Невидимая кнопка
                 if st.button(
-                    button_label,
-                    key=f"lanth_{symbol}",
+                    "",
+                    key=f"btn_lanth_{symbol}",
                     help=f"Нажмите для информации о {element['Название']}",
-                    use_container_width=True
+                    type="secondary"
                 ):
                     st.session_state.selected_element = symbol
                     st.rerun()
                 
-                # Применяем стили к кнопке
+                # Стилизуем кнопку
                 st.markdown(f"""
                 <style>
-                div[data-testid="column"]:nth-child({i+1}) button[kind="secondary"][data-testid="baseButton-secondary"] {{
-                    background-color: {color} !important;
-                    border: 1px solid #ccc !important;
-                    color: black !important;
+                div[data-testid="column"] div[data-testid="stVerticalBlock"] div[data-testid="stButton"] button[kind="secondary"][data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"] {{
+                    position: absolute !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100% !important;
                     height: 65px !important;
-                    padding: 4px !important;
-                    margin: 1px !important;
-                    border-radius: 6px !important;
-                    text-align: center !important;
-                    font-weight: normal !important;
-                    font-size: 14px !important;
-                    line-height: 1.2 !important;
-                    white-space: pre-wrap !important;
-                    transition: all 0.2s !important;
+                    opacity: 0 !important;
+                    z-index: 10 !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    cursor: pointer !important;
                 }}
                 </style>
                 """, unsafe_allow_html=True)
@@ -192,38 +254,72 @@ def show_periodic_table(elements_data):
                 element = elements_data[symbol]
                 color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
                 
-                button_label = f"**{symbol}**\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}"
+                # Создаем контейнер с ячейкой
+                cell_html = f"""
+                <div id="cell_actin_{symbol}" style="
+                    position: relative;
+                    background-color: {color}; 
+                    padding: 4px; 
+                    margin: 1px; 
+                    border-radius: 6px; 
+                    text-align: center;
+                    border: 1px solid #ccc; 
+                    height: 65px; 
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    transition: all 0.2s;">
+                    <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{symbol}</div>
+                    <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
+                    <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
+                        {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
+                    </div>
+                </div>
+                """
                 
+                # Отображаем ячейку
+                st.markdown(cell_html, unsafe_allow_html=True)
+                
+                # Стиль для hover эффекта
+                button_style = f"""
+                <style>
+                #cell_actin_{symbol}:hover {{
+                    transform: scale(1.03);
+                    border-color: #666;
+                    cursor: pointer;
+                }}
+                </style>
+                """
+                st.markdown(button_style, unsafe_allow_html=True)
+                
+                # Невидимая кнопка
                 if st.button(
-                    button_label,
-                    key=f"actin_{symbol}",
+                    "",
+                    key=f"btn_actin_{symbol}",
                     help=f"Нажмите для информации о {element['Название']}",
-                    use_container_width=True
+                    type="secondary"
                 ):
                     st.session_state.selected_element = symbol
                     st.rerun()
                 
-                # Применяем стили к кнопке
+                # Стилизуем кнопку
                 st.markdown(f"""
                 <style>
-                div[data-testid="column"]:nth-child({i+1}) button[kind="secondary"][data-testid="baseButton-secondary"] {{
-                    background-color: {color} !important;
-                    border: 1px solid #ccc !important;
-                    color: black !important;
+                div[data-testid="column"] div[data-testid="stVerticalBlock"] div[data-testid="stButton"] button[kind="secondary"][data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"] {{
+                    position: absolute !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100% !important;
                     height: 65px !important;
-                    padding: 4px !important;
-                    margin: 1px !important;
-                    border-radius: 6px !important;
-                    text-align: center !important;
-                    font-weight: normal !important;
-                    font-size: 14px !important;
-                    line-height: 1.2 !important;
-                    white-space: pre-wrap !important;
-                    transition: all 0.2s !important;
+                    opacity: 0 !important;
+                    z-index: 10 !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    cursor: pointer !important;
                 }}
                 </style>
                 """, unsafe_allow_html=True)
-    
+                
 def show_element_info(element_symbol, elements_data):
     if element_symbol not in elements_data:
         return
@@ -646,6 +742,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
