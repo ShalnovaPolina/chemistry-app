@@ -78,7 +78,7 @@ def create_periodic_table_layout():
     
     return positions, lanthanoids, actinoids
 
-# Отображение компактной таблицы - ЯЧЕЙКА = КНОПКА
+# Отображение компактной таблицы - ПРАВИЛЬНЫЕ КНОПКИ
 def show_periodic_table(elements_data):
     positions, lanthanoids, actinoids = create_periodic_table_layout()
     
@@ -93,18 +93,10 @@ def show_periodic_table(elements_data):
                         element = elements_data[element_symbol]
                         color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
                         
-                        # Создаем содержимое для кнопки с форматированием
-                        button_label = f"""
-                        <div style='text-align: center; line-height: 1.2;'>
-                            <div style='font-weight: bold; font-size: 16px;'>{element_symbol}</div>
-                            <div style='font-size: 10px; color: #666;'>{element['Порядковый номер']}</div>
-                            <div style='font-size: 9px; color: #888; margin-top: 2px;'>
-                                {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
-                            </div>
-                        </div>
-                        """
+                        # Простой текст для кнопки (без HTML)
+                        button_label = f"{element_symbol}\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}"
                         
-                        # Создаем кнопку, которая будет выглядеть как ячейка
+                        # Создаем кнопку-ячейку
                         if st.button(
                             button_label,
                             key=f"btn_{element_symbol}_{period}_{group}",
@@ -118,56 +110,46 @@ def show_periodic_table(elements_data):
                         st.markdown(f"""
                         <style>
                         /* Стили для кнопки-ячейки */
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"] {{
+                        div[data-testid="column"]:nth-child({group+1}) button[data-testid="baseButton-secondary"] {{
                             background-color: {color} !important;
                             border: 1px solid #ccc !important;
                             color: black !important;
                             height: 65px !important;
+                            min-height: 65px !important;
+                            max-height: 65px !important;
                             padding: 4px !important;
                             margin: 1px !important;
                             border-radius: 6px !important;
                             text-align: center !important;
                             font-weight: normal !important;
+                            font-size: 12px !important;
+                            line-height: 1.2 !important;
+                            white-space: pre-wrap !important;
+                            word-wrap: break-word !important;
+                            overflow: hidden !important;
                             transition: all 0.2s !important;
                             display: flex !important;
                             align-items: center !important;
                             justify-content: center !important;
                         }}
                         
+                        /* Делаем первую строку жирной и больше */
+                        div[data-testid="column"]:nth-child({group+1}) button[data-testid="baseButton-secondary"]::first-line {{
+                            font-weight: bold !important;
+                            font-size: 16px !important;
+                        }}
+                        
                         /* Hover эффект */
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"]:hover {{
+                        div[data-testid="column"]:nth-child({group+1}) button[data-testid="baseButton-secondary"]:hover {{
                             transform: scale(1.03) !important;
                             border-color: #666 !important;
                             box-shadow: 0 0 5px rgba(0,0,0,0.1) !important;
                         }}
                         
                         /* Активное состояние */
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"]:active {{
+                        div[data-testid="column"]:nth-child({group+1}) button[data-testid="baseButton-secondary"]:active {{
                             border-color: #FF0000 !important;
                             box-shadow: 0 0 8px rgba(255,0,0,0.3) !important;
-                        }}
-                        
-                        /* Стили для содержимого кнопки */
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"] div {{
-                            line-height: 1.2 !important;
-                            margin: 0 !important;
-                            padding: 0 !important;
-                        }}
-                        
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"] div:nth-child(1) {{
-                            font-weight: bold !important;
-                            font-size: 16px !important;
-                        }}
-                        
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"] div:nth-child(2) {{
-                            font-size: 10px !important;
-                            color: #666 !important;
-                        }}
-                        
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"] div:nth-child(3) {{
-                            font-size: 9px !important;
-                            color: #888 !important;
-                            margin-top: 2px !important;
                         }}
                         </style>
                         """, unsafe_allow_html=True)
@@ -188,16 +170,8 @@ def show_periodic_table(elements_data):
                 element = elements_data[symbol]
                 color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
                 
-                # Создаем содержимое для кнопки
-                button_label = f"""
-                <div style='text-align: center; line-height: 1.2;'>
-                    <div style='font-weight: bold; font-size: 16px;'>{symbol}</div>
-                    <div style='font-size: 10px; color: #666;'>{element['Порядковый номер']}</div>
-                    <div style='font-size: 9px; color: #888; margin-top: 2px;'>
-                        {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
-                    </div>
-                </div>
-                """
+                # Простой текст для кнопки
+                button_label = f"{symbol}\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}"
                 
                 # Кнопка-ячейка
                 if st.button(
@@ -212,53 +186,38 @@ def show_periodic_table(elements_data):
                 # Стили для кнопки-ячейки
                 st.markdown(f"""
                 <style>
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"] {{
+                div[data-testid="column"]:nth-child({i+1}) button[data-testid="baseButton-secondary"] {{
                     background-color: {color} !important;
                     border: 1px solid #ccc !important;
                     color: black !important;
                     height: 65px !important;
+                    min-height: 65px !important;
+                    max-height: 65px !important;
                     padding: 4px !important;
                     margin: 1px !important;
                     border-radius: 6px !important;
                     text-align: center !important;
                     font-weight: normal !important;
+                    font-size: 12px !important;
+                    line-height: 1.2 !important;
+                    white-space: pre-wrap !important;
+                    word-wrap: break-word !important;
+                    overflow: hidden !important;
                     transition: all 0.2s !important;
                     display: flex !important;
                     align-items: center !important;
                     justify-content: center !important;
                 }}
                 
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"]:hover {{
-                    transform: scale(1.03) !important;
-                    border-color: #666 !important;
-                    box-shadow: 0 0 5px rgba(0,0,0,0.1) !important;
-                }}
-                
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"]:active {{
-                    border-color: #FF0000 !important;
-                    box-shadow: 0 0 8px rgba(255,0,0,0.3) !important;
-                }}
-                
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"] div {{
-                    line-height: 1.2 !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }}
-                
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"] div:nth-child(1) {{
+                div[data-testid="column"]:nth-child({i+1}) button[data-testid="baseButton-secondary"]::first-line {{
                     font-weight: bold !important;
                     font-size: 16px !important;
                 }}
                 
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"] div:nth-child(2) {{
-                    font-size: 10px !important;
-                    color: #666 !important;
-                }}
-                
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"] div:nth-child(3) {{
-                    font-size: 9px !important;
-                    color: #888 !important;
-                    margin-top: 2px !important;
+                div[data-testid="column"]:nth-child({i+1}) button[data-testid="baseButton-secondary"]:hover {{
+                    transform: scale(1.03) !important;
+                    border-color: #666 !important;
+                    box-shadow: 0 0 5px rgba(0,0,0,0.1) !important;
                 }}
                 </style>
                 """, unsafe_allow_html=True)
@@ -272,16 +231,8 @@ def show_periodic_table(elements_data):
                 element = elements_data[symbol]
                 color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
                 
-                # Создаем содержимое для кнопки
-                button_label = f"""
-                <div style='text-align: center; line-height: 1.2;'>
-                    <div style='font-weight: bold; font-size: 16px;'>{symbol}</div>
-                    <div style='font-size: 10px; color: #666;'>{element['Порядковый номер']}</div>
-                    <div style='font-size: 9px; color: #888; margin-top: 2px;'>
-                        {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
-                    </div>
-                </div>
-                """
+                # Простой текст для кнопки
+                button_label = f"{symbol}\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}"
                 
                 # Кнопка-ячейка
                 if st.button(
@@ -296,56 +247,43 @@ def show_periodic_table(elements_data):
                 # Стили для кнопки-ячейки
                 st.markdown(f"""
                 <style>
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"] {{
+                div[data-testid="column"]:nth-child({i+1}) button[data-testid="baseButton-secondary"] {{
                     background-color: {color} !important;
                     border: 1px solid #ccc !important;
                     color: black !important;
                     height: 65px !important;
+                    min-height: 65px !important;
+                    max-height: 65px !important;
                     padding: 4px !important;
                     margin: 1px !important;
                     border-radius: 6px !important;
                     text-align: center !important;
                     font-weight: normal !important;
+                    font-size: 12px !important;
+                    line-height: 1.2 !important;
+                    white-space: pre-wrap !important;
+                    word-wrap: break-word !important;
+                    overflow: hidden !important;
                     transition: all 0.2s !important;
                     display: flex !important;
                     align-items: center !important;
                     justify-content: center !important;
                 }}
                 
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"]:hover {{
-                    transform: scale(1.03) !important;
-                    border-color: #666 !important;
-                    box-shadow: 0 0 5px rgba(0,0,0,0.1) !important;
-                }}
-                
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"]:active {{
-                    border-color: #FF0000 !important;
-                    box-shadow: 0 0 8px rgba(255,0,0,0.3) !important;
-                }}
-                
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"] div {{
-                    line-height: 1.2 !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                }}
-                
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"] div:nth-child(1) {{
+                div[data-testid="column"]:nth-child({i+1}) button[data-testid="baseButton-secondary"]::first-line {{
                     font-weight: bold !important;
                     font-size: 16px !important;
                 }}
                 
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"] div:nth-child(2) {{
-                    font-size: 10px !important;
-                    color: #666 !important;
-                }}
-                
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"] div:nth-child(3) {{
-                    font-size: 9px !important;
-                    color: #888 !important;
-                    margin-top: 2px !important;
+                div[data-testid="column"]:nth-child({i+1}) button[data-testid="baseButton-secondary"]:hover {{
+                    transform: scale(1.03) !important;
+                    border-color: #666 !important;
+                    box-shadow: 0 0 5px rgba(0,0,0,0.1) !important;
                 }}
                 </style>
-                """, unsafe_allow_html=True)    
+                """, unsafe_allow_html=True)
+
+
 def show_element_info(element_symbol, elements_data):
     if element_symbol not in elements_data:
         return
@@ -768,6 +706,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
