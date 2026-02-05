@@ -91,7 +91,17 @@ def show_periodic_table(elements_data):
                     element_symbol = positions[(period, group)]
                     if element_symbol in elements_data:
                         element = elements_data[element_symbol]
-                        color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
+                        # ИЗМЕНЕНИЕ 1: Тип элемента больше не в структуре, используем словарь для цвета
+                        element_type = "Неметалл"  # Базовое значение
+                        # Определяем тип для цвета на основе группы
+                        if group in [0, 1]:  # Щелочные и щелочноземельные металлы
+                            element_type = "Металл"
+                        elif 2 <= group <= 11:  # Переходные металлы
+                            element_type = "Переходный металл"
+                        elif group >= 12 and element_symbol not in ["B", "C", "N", "O", "F", "Ne", "Si", "P", "S", "Cl", "Ar", "Ge", "As", "Se", "Br", "Kr"]:
+                            element_type = "Металл"
+                        
+                        color = get_element_color(element_type, element_symbol, element["Порядковый номер"])
                         
                         # Создаем красивую ячейку с помощью HTML (как в оригинале)
                         cell_html = f"""
@@ -192,7 +202,8 @@ def show_periodic_table(elements_data):
         with lan_cols[i]:
             if symbol in elements_data:
                 element = elements_data[symbol]
-                color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
+                # Для лантаноидов используем цвет металлов
+                color = get_element_color("Лантаноид", symbol, element["Порядковый номер"])
                 
                 # Создаем красивую ячейку для лантаноида
                 cell_html = f"""
@@ -284,7 +295,8 @@ def show_periodic_table(elements_data):
         with act_cols[i]:
             if symbol in elements_data:
                 element = elements_data[symbol]
-                color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
+                # Для актиноидов используем цвет металлов
+                color = get_element_color("Актиноид", symbol, element["Порядковый номер"])
                 
                 # Создаем красивую ячейку для актиноида
                 cell_html = f"""
@@ -389,31 +401,73 @@ def show_element_info(element_symbol, elements_data):
         # Порядковый номер с иконкой
         st.markdown(f"**🔢 Порядковый номер:** {element['Порядковый номер']}")
         
-        # Атомная масса с округлением
+        # Атомная масса с округлением - ИЗМЕНЕНИЕ 3: добавляем скобочки с информацией об округлении
         atomic_mass = element['Атомная масса']
         if isinstance(atomic_mass, (int, float)):
-            if atomic_mass == int(atomic_mass):
+            # Специальная обработка для хлора (всегда 35.5)
+            if element_symbol == "Cl":
+                mass_display = "35.5"
+                round_info = " (всегда 35.5)"
+            elif atomic_mass == int(atomic_mass):
                 mass_display = f"{int(atomic_mass)}"
+                round_info = " (целое число)"
             else:
-                mass_display = f"{atomic_mass:.3f}"
+                # Определяем сколько знаков после запятой
+                mass_str = str(atomic_mass)
+                if '.' in mass_str:
+                    decimal_places = len(mass_str.split('.')[1])
+                    if decimal_places <= 3:
+                        mass_display = f"{atomic_mass:.{decimal_places}f}"
+                        round_info = f" (округлено до {decimal_places} знаков)"
+                    else:
+                        mass_display = f"{atomic_mass:.3f}"
+                        round_info = " (округлено до 3 знаков)"
+                else:
+                    mass_display = f"{atomic_mass}"
+                    round_info = " (целое число)"
         else:
             mass_display = str(atomic_mass)
-        st.markdown(f"**⚖️ Относительная атомная масса:** {mass_display}")
+            round_info = ""
         
-        # Тип элемента с иконкой
-        element_type = element['Тип элемента']
+        st.markdown(f"**⚖️ Относительная атомная масса:** {mass_display}{round_info}")
+        
+        # Тип элемента - определяем на основе группы в таблице
+        element_type = "Неизвестно"
+        element_number = element['Порядковый номер']
+        
+        # Простое определение типа для отображения (не для цвета)
+        if element_number <= 2:
+            if element_symbol == "H":
+                element_type = "Неметалл"
+            else:
+                element_type = "Благородный газ"
+        elif 3 <= element_number <= 10:
+            if element_symbol in ["B", "C", "N", "O", "F", "Ne"]:
+                element_type = "Неметалл"
+            elif element_symbol in ["Li", "Be"]:
+                element_type = "Металл"
+        elif 11 <= element_number <= 18:
+            if element_symbol in ["Na", "Mg", "Al"]:
+                element_type = "Металл"
+            else:
+                element_type = "Неметалл"
+        else:
+            # Более сложные элементы - упрощённо
+            if element_symbol in ["He", "Ne", "Ar", "Kr", "Xe", "Rn"]:
+                element_type = "Благородный газ"
+            elif element_symbol in ["B", "C", "Si", "N", "P", "As", "O", "S", "Se", "Te", "F", "Cl", "Br", "I", "At"]:
+                element_type = "Неметалл"
+            else:
+                element_type = "Металл"
+        
         type_icon = "⚪"
         if "металл" in element_type.lower():
-            if "щелоч" in element_type.lower():
-                type_icon = "🟡"
-            elif "благород" in element_type.lower():
+            if "благород" in element_type.lower():
                 type_icon = "🟣"
             else:
                 type_icon = "🟠"
         elif "неметалл" in element_type.lower():
             type_icon = "🟢"
-        elif "полуметалл" in element_type.lower():
-            type_icon = "🔵"
         elif "благородный газ" in element_type.lower():
             type_icon = "🟣"
         
@@ -484,7 +538,6 @@ def show_element_info(element_symbol, elements_data):
             st.markdown("**🔸 Степень окисления:** не указана")
         
         # Электронная конфигурация с форматированием
-                # Электронная конфигурация с форматированием
         electron_config = element.get('Электронная конфигурация', '')
         if electron_config:
             st.markdown(f"**🔸 Электронная конфигурация:**")
@@ -497,91 +550,65 @@ def show_element_info(element_symbol, elements_data):
             st.markdown(f"`{formatted_config}`", unsafe_allow_html=True)
         else:
             st.markdown("**🔸 Электронная конфигурация:** не указана")
+    
     with col3:
-        st.subheader("🧪 Свойства простого вещества")
+        st.subheader("🧪 Свойства соединений")
         st.markdown("---")
         
-        # Агрегатное состояние с иконками
-        state = element.get('Агрегатное состояние', '')
-        if state:
-            state_lower = state.lower()
-            state_icon = "❓"
-            
-            if "газ" in state_lower or "газов" in state_lower:
-                state_icon = "💨"
-            elif "жидк" in state_lower or "жидко" in state_lower:
-                state_icon = "💧"
-            elif "тверд" in state_lower or "твердо" in state_lower:
-                state_icon = "🧊"
-            elif "крист" in state_lower:
-                state_icon = "✨"
-            elif "плазм" in state_lower:
-                state_icon = "⚡"
-            
-            # Проверяем уточнение про комнатную температуру
-            if "комнат" in state_lower or "стандарт" in state_lower:
-                state_display = state
-            else:
-                # Добавляем уточнение для некоторых элементов
-                if element_symbol in ["Br", "Hg"]:
-                    state_display = f"{state} (при комнатной температуре)"
-                else:
-                    state_display = state
-            
-            st.markdown(f"**🔹 {state_icon} Агрегатное состояние:** {state_display}")
-        else:
-            st.markdown("**🔹 Агрегатное состояние:** не указано")
+        # ИЗМЕНЕНИЕ 1: Вместо агрегатного состояния, внешнего вида и характера оксида
+        # показываем новые поля из JSON
         
-        # Внешний вид
-        appearance = element.get('Внешний вид', '')
-        if appearance:
-            # Исправляем описание висмута
-            if element_symbol == "Bi" and "розоватым оттенком" in appearance:
-                appearance = appearance.replace("оттенком", "отливом")
-            
-            st.markdown(f"**🔹 Внешний вид:** {appearance}")
-        else:
-            st.markdown("**🔹 Внешний вид:** не указан")
+        # Формула простого вещества
+        simple_formula = element.get('Формула простого вещества', {})
+        if simple_formula and isinstance(simple_formula, dict):
+            formula = simple_formula.get('Формула', '')
+            description = simple_formula.get('Описание', '')
+            if formula and formula != "—":
+                st.markdown(f"**🔹 Формула простого вещества:**")
+                st.markdown(f"**{formula}**")
+                if description:
+                    st.markdown(f"*{description[:100]}...*" if len(description) > 100 else f"*{description}*")
         
-        # Характер оксида с иконками
-        oxide_nature = element.get('Характер оксида', '')
-        if oxide_nature and oxide_nature.strip():
-            oxide_lower = oxide_nature.lower()
-            oxide_icon = "❓"
-            
-            if "не образует" in oxide_lower or "отсутствует" in oxide_lower:
-                oxide_icon = "🚫"
-            elif "амфотер" in oxide_lower:
-                oxide_icon = "⚖️"
-            elif "кислот" in oxide_lower:
-                oxide_icon = "🧪"
-            elif "основ" in oxide_lower:
-                oxide_icon = "🛡️"
-            elif "нейтр" in oxide_lower:
-                oxide_icon = "⚪"
-            elif "особый" in oxide_lower or "компонент" in oxide_lower:
-                oxide_icon = "⚠️"
-            elif "предположительно" in oxide_lower:
-                oxide_icon = "❔"
-            elif "зависит" in oxide_lower:
-                oxide_icon = "🔄"
-            
-            # Для благородных газов - особый стиль
-            if element_symbol in ["He", "Ne", "Ar", "Kr", "Xe", "Rn", "Og"]:
-                if "не образует" in oxide_lower:
-                    st.markdown(f"**🔹 🚫 Характер оксида:** {oxide_nature}")
-                else:
-                    st.markdown(f"**🔹 {oxide_icon} Характер оксида:** {oxide_nature}")
-            else:
-                st.markdown(f"**🔹 {oxide_icon} Характер оксида:** {oxide_nature}")
-        else:
-            st.markdown("**🔹 Характер оксида:** не указан")
+        # Высший оксид
+        higher_oxide = element.get('Высший оксид', {})
+        if higher_oxide and isinstance(higher_oxide, dict):
+            oxide_formula = higher_oxide.get('Формула', '')
+            oxide_nature = higher_oxide.get('Характер', '')
+            if oxide_formula and oxide_formula != "—":
+                # Добавляем иконку в зависимости от характера оксида
+                oxide_icon = "🧪"  # по умолчанию
+                if oxide_nature:
+                    if "кислот" in oxide_nature.lower():
+                        oxide_icon = "🧪"
+                    elif "основ" in oxide_nature.lower():
+                        oxide_icon = "🛡️"
+                    elif "амфотер" in oxide_nature.lower():
+                        oxide_icon = "⚖️"
+                    elif "не образует" in oxide_nature.lower():
+                        oxide_icon = "🚫"
+                
+                st.markdown(f"**🔹 {oxide_icon} Высший оксид:**")
+                st.markdown(f"**{oxide_formula}**")
+                if oxide_nature:
+                    st.markdown(f"*Характер: {oxide_nature}*")
+        
+        # Летучее водородное соединение
+        volatile_hydrogen = element.get('Летучее водородное соединение', {})
+        if volatile_hydrogen and isinstance(volatile_hydrogen, dict):
+            vh_formula = volatile_hydrogen.get('Формула', '')
+            vh_description = volatile_hydrogen.get('Описание', '')
+            if vh_formula and vh_formula != "—":
+                st.markdown(f"**🔹 Летучее водородное соединение:**")
+                st.markdown(f"**{vh_formula}**")
+                if vh_description:
+                    st.markdown(f"*{vh_description[:100]}...*" if len(vh_description) > 100 else f"*{vh_description}*")
     
     # Дополнительная информация (если нужно)
     st.markdown("---")
     
     # Проверка согласованности данных
-    if "предположительно" in element.get('Характер оксида', '').lower():
+    higher_oxide = element.get('Высший оксид', {})
+    if isinstance(higher_oxide, dict) and "предположительно" in higher_oxide.get('Характер', '').lower():
         st.info("💡 *Характер оксида предположительный, так как элемент синтетический или малоизучен*")
     
     # Особые случаи
@@ -595,7 +622,57 @@ def show_element_info(element_symbol, elements_data):
     
     if element_symbol in special_cases:
         st.warning(f"📝 **Примечание:** {special_cases[element_symbol]}")
-# Режим тестирования с сохранением статистики
+
+# ИЗМЕНЕНИЕ 2: Новая функция для выбора элементов для тестирования
+def get_elements_by_selection(selection_type, elements_data):
+    """
+    Возвращает список элементов в зависимости от выбора пользователя
+    """
+    if selection_type == "Все элементы":
+        return list(elements_data.keys())
+    
+    elif selection_type == "Первые 20 элементов":
+        return [sym for sym in elements_data.keys() 
+                if elements_data[sym]["Порядковый номер"] <= 20]
+    
+    elif selection_type == "Элементы 1-4 групп":
+        # Определяем номера элементов из 1-4 групп (I-A, II-A, III-A, IV-A)
+        groups_1_4 = []
+        for sym, data in elements_data.items():
+            num = data["Порядковый номер"]
+            # Щелочные металлы (1 группа)
+            if num in [3, 11, 19, 37, 55, 87]:  # Li, Na, K, Rb, Cs, Fr
+                groups_1_4.append(sym)
+            # Щелочноземельные металлы (2 группа)
+            elif num in [4, 12, 20, 38, 56, 88]:  # Be, Mg, Ca, Sr, Ba, Ra
+                groups_1_4.append(sym)
+            # Бор и алюминий (13 группа = III-A)
+            elif num in [5, 13, 31, 49, 81, 113]:  # B, Al, Ga, In, Tl, Nh
+                groups_1_4.append(sym)
+            # Углеродная группа (14 группа = IV-A)
+            elif num in [6, 14, 32, 50, 82, 114]:  # C, Si, Ge, Sn, Pb, Fl
+                groups_1_4.append(sym)
+        return groups_1_4
+    
+    elif selection_type == "Неметаллы":
+        # Список известных неметаллов
+        nonmetals = ["H", "He", "B", "C", "N", "O", "F", "Ne", 
+                    "Si", "P", "S", "Cl", "Ar", "Ge", "As", 
+                    "Se", "Br", "Kr", "Sb", "Te", "I", "Xe", 
+                    "At", "Rn"]
+        return [sym for sym in nonmetals if sym in elements_data]
+    
+    elif selection_type == "Металлы":
+        # Все элементы, кроме неметаллов и благородных газов
+        nonmetals_and_noble = ["H", "He", "B", "C", "N", "O", "F", "Ne", 
+                              "Si", "P", "S", "Cl", "Ar", "Ge", "As", 
+                              "Se", "Br", "Kr", "Sb", "Te", "I", "Xe", 
+                              "At", "Rn"]
+        return [sym for sym in elements_data.keys() if sym not in nonmetals_and_noble]
+    
+    return list(elements_data.keys())
+
+# Режим тестирования с сохранением статистики - ИЗМЕНЕНИЕ 2
 def show_test_mode(elements_data):
     st.header("🎯 Проверь свои знания")
     
@@ -605,9 +682,43 @@ def show_test_mode(elements_data):
             'score': 0,
             'total': 0,
             'current_question': None,
-            'current_level': None
+            'current_level': None,
+            'selected_elements': "Все элементы"  # ИЗМЕНЕНИЕ 2: добавляем выбранные элементы
         }
     
+    # ИЗМЕНЕНИЕ 2: Выбор элементов для тестирования
+    st.subheader("📋 Выберите элементы для изучения")
+    
+    selection_options = [
+        "Все элементы",
+        "Первые 20 элементов", 
+        "Элементы 1-4 групп",
+        "Неметаллы",
+        "Металлы"
+    ]
+    
+    selected_elements = st.selectbox(
+        "**Какие элементы вы хотите изучить?**",
+        selection_options,
+        index=selection_options.index(st.session_state.test_data['selected_elements']) 
+               if st.session_state.test_data['selected_elements'] in selection_options else 0
+    )
+    
+    st.session_state.test_data['selected_elements'] = selected_elements
+    
+    # Получаем список элементов в зависимости от выбора
+    available_elements = get_elements_by_selection(selected_elements, elements_data)
+    
+    # Показываем статистику выбора
+    col1, col2 = st.columns(2)
+    with col1:
+        st.info(f"**Выбрано элементов:** {len(available_elements)}")
+    with col2:
+        st.info(f"**Режим:** {selected_elements}")
+    
+    st.markdown("---")
+    
+    # Уровень сложности
     level = st.radio(
         "**Выберите уровень сложности:**",
         ["🟢 Лёгкий", "🟡 Средний", "🔴 Сложный"],
@@ -620,13 +731,23 @@ def show_test_mode(elements_data):
     col1, col2 = st.columns([1, 3])
     with col1:
         if st.button("🎲 Новый вопрос", use_container_width=True):
-            element_symbol = random.choice(list(elements_data.keys()))
+            if not available_elements:
+                st.error("❌ Нет доступных элементов для выбранного режима!")
+                return
+            
+            element_symbol = random.choice(available_elements)
             element = elements_data[element_symbol]
 
             if level_key == "Лёгкий":
                 question = f"Какой символ у элемента **{element['Название']}**?"
-                other_elements = [k for k in elements_data.keys() if k != element_symbol]
-                options = [element_symbol] + random.sample(other_elements, 3)
+                # ИЗМЕНЕНИЕ 2: Используем только доступные элементы для вариантов ответов
+                other_elements = [k for k in available_elements if k != element_symbol]
+                if len(other_elements) >= 3:
+                    options = [element_symbol] + random.sample(other_elements, 3)
+                else:
+                    # Если доступных элементов мало, дополняем случайными из всех
+                    all_other = [k for k in elements_data.keys() if k != element_symbol]
+                    options = [element_symbol] + random.sample(all_other, 3)
                 correct_answer = element_symbol
 
             elif level_key == "Средний":
@@ -639,11 +760,16 @@ def show_test_mode(elements_data):
 
             else:
                 question = f"Какая **электронная конфигурация** у **{element_symbol}**?"
-                other_elements = [k for k in elements_data.keys() if k != element_symbol]
-                options = [element['Электронная конфигурация']] + [
-                    elements_data[random.choice(other_elements)]['Электронная конфигурация']
-                    for _ in range(3)
-                ]
+                # ИЗМЕНЕНИЕ 2: Используем только доступные элементы для вариантов ответов
+                other_elements = [k for k in available_elements if k != element_symbol]
+                if len(other_elements) >= 3:
+                    other_configs = [elements_data[sym]['Электронная конфигурация'] for sym in random.sample(other_elements, 3)]
+                else:
+                    # Если доступных элементов мало, дополняем случайными из всех
+                    all_other = [k for k in elements_data.keys() if k != element_symbol]
+                    other_configs = [elements_data[sym]['Электронная конфигурация'] for sym in random.sample(all_other, 3)]
+                
+                options = [element['Электронная конфигурация']] + other_configs
                 correct_answer = element['Электронная конфигурация']
 
             random.shuffle(options)
@@ -708,6 +834,9 @@ def show_test_mode(elements_data):
             percentage = (st.session_state.test_data['score'] / st.session_state.test_data['total']) * 100
             st.metric("Успеваемость", f"{percentage:.1f}%")
         
+        # Дополнительная информация о режиме
+        st.info(f"**Режим изучения:** {selected_elements} | **Уровень:** {level_key}")
+        
         # Показать общую статистику пользователя, если он зарегистрирован
         if st.session_state.get("username") and st.session_state["username"] != "Гость":
             user_stats = get_user_stats(st.session_state["username"])
@@ -729,7 +858,8 @@ def show_test_mode(elements_data):
                 'score': 0,
                 'total': 0,
                 'current_question': None,
-                'current_level': None
+                'current_level': None,
+                'selected_elements': selected_elements  # Сохраняем выбор элементов
             }
             st.rerun()
 
@@ -792,22 +922,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
