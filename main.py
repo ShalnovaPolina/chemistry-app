@@ -78,7 +78,7 @@ def create_periodic_table_layout():
     
     return positions, lanthanoids, actinoids
 
-# Отображение компактной таблицы - ЦВЕТНЫЕ ЯЧЕЙКИ-КНОПКИ
+# Отображение компактной таблицы - ПРОСТАЯ ВЕРСИЯ
 def show_periodic_table(elements_data):
     positions, lanthanoids, actinoids = create_periodic_table_layout()
     
@@ -93,20 +93,22 @@ def show_periodic_table(elements_data):
                         element = elements_data[element_symbol]
                         color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
                         
-                        # Создаем HTML для ячейки-кнопки
-                        cell_content = f"""
+                        # Просто используем кнопку с кастомными стилями
+                        button_html = f"""
                         <div style="
                             background-color: {color}; 
                             padding: 4px; 
                             margin: 1px; 
                             border-radius: 6px; 
-                            text-align: center;
+                            text-align: center; 
+                            cursor: pointer;
                             border: 1px solid #ccc; 
                             height: 65px; 
                             display: flex; 
                             flex-direction: column; 
                             justify-content: center;
-                            cursor: pointer;">
+                            transition: all 0.2s;"
+                            onclick="window.location.href='#element_{element_symbol}'">
                             <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{element_symbol}</div>
                             <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
                             <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
@@ -115,50 +117,31 @@ def show_periodic_table(elements_data):
                         </div>
                         """
                         
-                        # Используем markdown с HTML для отображения ячейки
-                        st.markdown(cell_content, unsafe_allow_html=True)
+                        # Используем markdown с HTML
+                        st.markdown(button_html, unsafe_allow_html=True)
                         
-                        # Создаем невидимую кнопку, которая будет реагировать на клик по ячейке
-                        # Для этого помещаем кнопку в тот же контейнер
-                        col1, col2, col3 = st.columns([1, 1, 1])
-                        with col2:  # Используем среднюю колонку для позиционирования
-                            if st.button(
-                                "",
-                                key=f"btn_{element_symbol}_{period}_{group}",
-                                help=f"Нажмите для информации о {element['Название']}",
-                                type="secondary"
-                            ):
-                                st.session_state.selected_element = element_symbol
-                                st.rerun()
+                        # Простая кнопка Streamlit рядом с HTML
+                        if st.button(
+                            " ",
+                            key=f"btn_{element_symbol}_{period}_{group}",
+                            help=f"Нажмите для информации о {element['Название']}",
+                            use_container_width=True
+                        ):
+                            st.session_state.selected_element = element_symbol
+                            st.rerun()
                         
-                        # Стилизуем кнопку так, чтобы она была невидимой и покрывала ячейку
+                        # Делаем кнопку Streamlit невидимой
                         st.markdown(f"""
                         <style>
-                        /* Прячем саму кнопку */
-                        button[kind="secondary"][data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"] {{
+                        div[data-testid="column"] div[data-testid="stVerticalBlock"] div[data-testid="stButton"] button[kind="primary"][data-testid="baseButton-primary"] {{
+                            opacity: 0 !important;
                             position: absolute !important;
                             top: 0 !important;
                             left: 0 !important;
                             width: 100% !important;
                             height: 65px !important;
-                            opacity: 0 !important;
-                            background: transparent !important;
-                            border: none !important;
-                            padding: 0 !important;
-                            margin: 0 !important;
-                            z-index: 100 !important;
+                            z-index: 10 !important;
                             cursor: pointer !important;
-                        }}
-                        
-                        /* Добавляем hover эффект для ячейки */
-                        div[data-testid="column"]:nth-child({group+1}) {{
-                            position: relative !important;
-                        }}
-                        
-                        div[data-testid="column"]:nth-child({group+1}) div:hover {{
-                            transform: scale(1.03) !important;
-                            border-color: #666 !important;
-                            transition: all 0.2s !important;
                         }}
                         </style>
                         """, unsafe_allow_html=True)
@@ -169,151 +152,6 @@ def show_periodic_table(elements_data):
                     # Пустая ячейка
                     st.markdown('<div style="height: 65px;"></div>', unsafe_allow_html=True)
     
-    # Лантаноиды - компактный вид
-    st.markdown("---")
-    st.markdown("**Лантаноиды:**")
-    lan_cols = st.columns(14)
-    for i, symbol in enumerate(lanthanoids):
-        with lan_cols[i]:
-            if symbol in elements_data:
-                element = elements_data[symbol]
-                color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
-                
-                # Создаем HTML для ячейки-кнопки
-                cell_content = f"""
-                <div style="
-                    background-color: {color}; 
-                    padding: 4px; 
-                    margin: 1px; 
-                    border-radius: 6px; 
-                    text-align: center;
-                    border: 1px solid #ccc; 
-                    height: 65px; 
-                    display: flex; 
-                    flex-direction: column; 
-                    justify-content: center;
-                    cursor: pointer;">
-                    <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{symbol}</div>
-                    <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
-                    <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
-                        {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
-                    </div>
-                </div>
-                """
-                
-                # Отображаем ячейку
-                st.markdown(cell_content, unsafe_allow_html=True)
-                
-                # Невидимая кнопка
-                col1, col2, col3 = st.columns([1, 1, 1])
-                with col2:
-                    if st.button(
-                        "",
-                        key=f"btn_lanth_{symbol}",
-                        help=f"Нажмите для информации о {element['Название']}",
-                        type="secondary"
-                    ):
-                        st.session_state.selected_element = symbol
-                        st.rerun()
-                
-                # Стили для кнопки
-                st.markdown(f"""
-                <style>
-                button[kind="secondary"][data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"] {{
-                    position: absolute !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100% !important;
-                    height: 65px !important;
-                    opacity: 0 !important;
-                    background: transparent !important;
-                    border: none !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    z-index: 100 !important;
-                    cursor: pointer !important;
-                }}
-                
-                div[data-testid="column"]:nth-child({i+1}) div:hover {{
-                    transform: scale(1.03) !important;
-                    border-color: #666 !important;
-                    transition: all 0.2s !important;
-                }}
-                </style>
-                """, unsafe_allow_html=True)
-    
-    # Актиноиды - компактный вид
-    st.markdown("**Актиноиды:**")
-    act_cols = st.columns(14)
-    for i, symbol in enumerate(actinoids):
-        with act_cols[i]:
-            if symbol in elements_data:
-                element = elements_data[symbol]
-                color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
-                
-                # Создаем HTML для ячейки-кнопки
-                cell_content = f"""
-                <div style="
-                    background-color: {color}; 
-                    padding: 4px; 
-                    margin: 1px; 
-                    border-radius: 6px; 
-                    text-align: center;
-                    border: 1px solid #ccc; 
-                    height: 65px; 
-                    display: flex; 
-                    flex-direction: column; 
-                    justify-content: center;
-                    cursor: pointer;">
-                    <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{symbol}</div>
-                    <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
-                    <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
-                        {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
-                    </div>
-                </div>
-                """
-                
-                # Отображаем ячейку
-                st.markdown(cell_content, unsafe_allow_html=True)
-                
-                # Невидимая кнопка
-                col1, col2, col3 = st.columns([1, 1, 1])
-                with col2:
-                    if st.button(
-                        "",
-                        key=f"btn_actin_{symbol}",
-                        help=f"Нажмите для информации о {element['Название']}",
-                        type="secondary"
-                    ):
-                        st.session_state.selected_element = symbol
-                        st.rerun()
-                
-                # Стили для кнопки
-                st.markdown(f"""
-                <style>
-                button[kind="secondary"][data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"] {{
-                    position: absolute !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100% !important;
-                    height: 65px !important;
-                    opacity: 0 !important;
-                    background: transparent !important;
-                    border: none !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    z-index: 100 !important;
-                    cursor: pointer !important;
-                }}
-                
-                div[data-testid="column"]:nth-child({i+1}) div:hover {{
-                    transform: scale(1.03) !important;
-                    border-color: #666 !important;
-                    transition: all 0.2s !important;
-                }}
-                </style>
-                """, unsafe_allow_html=True)
-                
 def show_element_info(element_symbol, elements_data):
     if element_symbol not in elements_data:
         return
@@ -736,6 +574,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
