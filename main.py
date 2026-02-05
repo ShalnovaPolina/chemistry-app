@@ -79,6 +79,7 @@ def create_periodic_table_layout():
     return positions, lanthanoids, actinoids
 
 # Отображение компактной таблицы - ИЗМЕНЕНА
+# Отображение компактной таблицы - ИСПРАВЛЕННАЯ ВЕРСИЯ
 def show_periodic_table(elements_data):
     positions, lanthanoids, actinoids = create_periodic_table_layout()
     
@@ -93,68 +94,23 @@ def show_periodic_table(elements_data):
                         element = elements_data[element_symbol]
                         color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
                         
-                        # Создаем кликабельную ячейку
-                        button_html = f"""
-                        <div style="
-                            background-color: {color}; 
-                            padding: 4px; 
-                            margin: 1px; 
-                            border-radius: 6px; 
-                            text-align: center; 
-                            cursor: pointer;
-                            border: 1px solid #ccc; 
-                            height: 65px; 
-                            display: flex; 
-                            flex-direction: column; 
-                            justify-content: center;
-                            transition: all 0.2s;"
-                            onmouseover="this.style.transform='scale(1.03)'; this.style.borderColor='#666';"
-                            onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#ccc';">
-                            <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{element_symbol}</div>
-                            <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
-                            <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
-                                {element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}
-                            </div>
-                        </div>
-                        """
+                        # Создаем стилизованную кнопку
+                        button_label = f"**{element_symbol}**\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}"
                         
-                        # Используем markdown с HTML для создания кликабельного элемента
-                        # Добавляем JavaScript для обработки кликов
-                        click_script = f"""
-                        <script>
-                        function clickElement{symbol.replace(' ', '_')}{period}{group}() {{
-                            const elem = document.getElementById('clickable_{element_symbol}_{period}_{group}');
-                            elem.style.borderColor = '#FF0000';
-                            elem.style.boxShadow = '0 0 8px rgba(255,0,0,0.5)';
-                            setTimeout(() => {{
-                                elem.style.borderColor = '#ccc';
-                                elem.style.boxShadow = 'none';
-                            }}, 300);
-                            // Streamlit обработка
-                            window.parent.postMessage({{
-                                type: 'streamlit:setComponentValue',
-                                value: '{element_symbol}'
-                            }}, '*');
-                        }}
-                        </script>
-                        """
-                        
-                        st.markdown(click_script, unsafe_allow_html=True)
-                        
-                        # Создаем кнопку, которая выглядит как ячейка
+                        # Используем кнопку с кастомным CSS
                         if st.button(
-                            f"**{element_symbol}**\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}",
+                            button_label,
                             key=f"btn_{element_symbol}_{period}_{group}",
                             help=f"Нажмите для информации о {element['Название']}",
-                            use_container_width=True,
-                            type="secondary"  # Это делает кнопку менее заметной
+                            use_container_width=True
                         ):
                             st.session_state.selected_element = element_symbol
+                            st.rerun()
                         
-                        # Применяем стили к кнопке, чтобы она выглядела как ячейка
+                        # Применяем стили к кнопке
                         st.markdown(f"""
                         <style>
-                        div[data-testid="column"] div[data-testid="stVerticalBlock"] div[data-testid="stButton"] button[kind="secondary"] {{
+                        div[data-testid="column"]:nth-child({group+1}) button[kind="secondary"][data-testid="baseButton-secondary"] {{
                             background-color: {color} !important;
                             border: 1px solid #ccc !important;
                             color: black !important;
@@ -163,14 +119,17 @@ def show_periodic_table(elements_data):
                             margin: 1px !important;
                             border-radius: 6px !important;
                             text-align: center !important;
-                            font-weight: bold !important;
+                            font-weight: normal !important;
+                            font-size: 14px !important;
+                            line-height: 1.2 !important;
+                            white-space: pre-wrap !important;
                             transition: all 0.2s !important;
                         }}
-                        div[data-testid="column"] div[data-testid="stVerticalBlock"] div[data-testid="stButton"] button[kind="secondary"]:hover {{
+                        div[data-testid="column"]:nth-child({group+1}) button[kind="secondary"][data-testid="baseButton-secondary"]:hover {{
                             transform: scale(1.03) !important;
                             border-color: #666 !important;
                         }}
-                        div[data-testid="column"] div[data-testid="stVerticalBlock"] div[data-testid="stButton"] button[kind="secondary"]:active {{
+                        div[data-testid="column"]:nth-child({group+1}) button[kind="secondary"][data-testid="baseButton-secondary"]:active {{
                             border-color: #FF0000 !important;
                             box-shadow: 0 0 8px rgba(255,0,0,0.5) !important;
                         }}
@@ -192,20 +151,21 @@ def show_periodic_table(elements_data):
                 element = elements_data[symbol]
                 color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
                 
-                # Создаем кнопку, которая выглядит как ячейка
+                button_label = f"**{symbol}**\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}"
+                
                 if st.button(
-                    f"**{symbol}**\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}",
+                    button_label,
                     key=f"lanth_{symbol}",
                     help=f"Нажмите для информации о {element['Название']}",
-                    use_container_width=True,
-                    type="secondary"
+                    use_container_width=True
                 ):
                     st.session_state.selected_element = symbol
+                    st.rerun()
                 
                 # Применяем стили к кнопке
                 st.markdown(f"""
                 <style>
-                div[data-testid="column"] div[data-testid="stVerticalBlock"] div[data-testid="stButton"] button[kind="secondary"][data-testid="baseButton-secondary"][aria-label="lanth_{symbol}"] {{
+                div[data-testid="column"]:nth-child({i+1}) button[kind="secondary"][data-testid="baseButton-secondary"] {{
                     background-color: {color} !important;
                     border: 1px solid #ccc !important;
                     color: black !important;
@@ -214,7 +174,10 @@ def show_periodic_table(elements_data):
                     margin: 1px !important;
                     border-radius: 6px !important;
                     text-align: center !important;
-                    font-weight: bold !important;
+                    font-weight: normal !important;
+                    font-size: 14px !important;
+                    line-height: 1.2 !important;
+                    white-space: pre-wrap !important;
                     transition: all 0.2s !important;
                 }}
                 </style>
@@ -229,20 +192,21 @@ def show_periodic_table(elements_data):
                 element = elements_data[symbol]
                 color = get_element_color(element["Тип элемента"], symbol, element["Порядковый номер"])
                 
-                # Создаем кнопку, которая выглядит как ячейка
+                button_label = f"**{symbol}**\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}"
+                
                 if st.button(
-                    f"**{symbol}**\n{element['Порядковый номер']}\n{element['Название'][:8]}{'...' if len(element['Название']) > 8 else ''}",
+                    button_label,
                     key=f"actin_{symbol}",
                     help=f"Нажмите для информации о {element['Название']}",
-                    use_container_width=True,
-                    type="secondary"
+                    use_container_width=True
                 ):
                     st.session_state.selected_element = symbol
+                    st.rerun()
                 
                 # Применяем стили к кнопке
                 st.markdown(f"""
                 <style>
-                div[data-testid="column"] div[data-testid="stVerticalBlock"] div[data-testid="stButton"] button[kind="secondary"][data-testid="baseButton-secondary"][aria-label="actin_{symbol}"] {{
+                div[data-testid="column"]:nth-child({i+1}) button[kind="secondary"][data-testid="baseButton-secondary"] {{
                     background-color: {color} !important;
                     border: 1px solid #ccc !important;
                     color: black !important;
@@ -251,12 +215,15 @@ def show_periodic_table(elements_data):
                     margin: 1px !important;
                     border-radius: 6px !important;
                     text-align: center !important;
-                    font-weight: bold !important;
+                    font-weight: normal !important;
+                    font-size: 14px !important;
+                    line-height: 1.2 !important;
+                    white-space: pre-wrap !important;
                     transition: all 0.2s !important;
                 }}
                 </style>
                 """, unsafe_allow_html=True)
-
+    
 def show_element_info(element_symbol, elements_data):
     if element_symbol not in elements_data:
         return
@@ -679,6 +646,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
