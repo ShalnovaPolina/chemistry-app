@@ -78,7 +78,7 @@ def create_periodic_table_layout():
     
     return positions, lanthanoids, actinoids
 
-# Отображение компактной таблицы - КРАСИВЫЕ ЦВЕТНЫЕ ЯЧЕЙКИ
+# Отображение компактной таблицы - ЯЧЕЙКИ С НЕВИДИМЫМИ КНОПКАМИ
 def show_periodic_table(elements_data):
     positions, lanthanoids, actinoids = create_periodic_table_layout()
     
@@ -93,7 +93,7 @@ def show_periodic_table(elements_data):
                         element = elements_data[element_symbol]
                         color = get_element_color(element["Тип элемента"], element_symbol, element["Порядковый номер"])
                         
-                        # Создаем красивую ячейку с помощью HTML
+                        # Создаем красивую ячейку с помощью HTML (как в оригинале)
                         cell_html = f"""
                         <div style="
                             background-color: {color}; 
@@ -106,8 +106,7 @@ def show_periodic_table(elements_data):
                             display: flex; 
                             flex-direction: column; 
                             justify-content: center;
-                            transition: all 0.2s;
-                            position: relative;">
+                            transition: all 0.2s;">
                             <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{element_symbol}</div>
                             <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
                             <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
@@ -119,50 +118,62 @@ def show_periodic_table(elements_data):
                         # Отображаем ячейку
                         st.markdown(cell_html, unsafe_allow_html=True)
                         
-                        # Создаем невидимую кнопку поверх ячейки
-                        # Используем контейнер для правильного позиционирования
-                        container = st.container()
-                        with container:
-                            # Невидимая кнопка, которая покрывает ячейку
-                            if st.button(
-                                "",
-                                key=f"btn_{element_symbol}_{period}_{group}",
-                                help=f"Нажмите для информации о {element['Название']}",
-                                type="primary"
-                            ):
-                                st.session_state.selected_element = element_symbol
-                                st.rerun()
+                        # Добавляем аккуратную невидимую кнопку под ячейкой
+                        if st.button(
+                            " ",  # Пробел, чтобы кнопка была видимой, но минимальной
+                            key=f"btn_{element_symbol}_{period}_{group}",
+                            help=f"Нажмите для информации о {element['Название']}",
+                            use_container_width=True
+                        ):
+                            st.session_state.selected_element = element_symbol
+                            st.rerun()
                         
-                        # CSS для позиционирования невидимой кнопки поверх ячейки
+                        # Стилизуем кнопку, чтобы она была аккуратной и невидимой
                         st.markdown(f"""
                         <style>
-                        /* Делаем кнопку невидимой и покрывающей ячейку */
-                        button[data-testid="baseButton-primary"][aria-label="btn_{element_symbol}_{period}_{group}"] {{
-                            position: absolute !important;
-                            top: 0 !important;
-                            left: 0 !important;
-                            width: 100% !important;
-                            height: 65px !important;
-                            opacity: 0 !important;
-                            background: transparent !important;
-                            border: none !important;
-                            padding: 0 !important;
-                            margin: 0 !important;
-                            cursor: pointer !important;
-                            z-index: 100 !important;
+                        /* Стили для кнопки под ячейкой - компактные и невидимые */
+                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"] {{
+                            background-color: white !important;
+                            border: 1px solid #ddd !important;
+                            color: transparent !important;
+                            height: 25px !important;
+                            min-height: 25px !important;
+                            max-height: 25px !important;
+                            padding: 0px 2px !important;
+                            margin: 1px !important;
+                            margin-top: 0px !important;
+                            border-radius: 3px !important;
+                            text-align: center !important;
+                            font-size: 1px !important;
+                            line-height: 1 !important;
+                            transition: all 0.2s !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            opacity: 0.3 !important;
                         }}
                         
-                        /* Hover эффект для ячейки */
-                        div[data-testid="column"]:nth-child({group+1}) div[data-testid="stVerticalBlock"] > div:first-child div:hover {{
+                        /* Hover эффект для кнопки - становится немного заметнее */
+                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"]:hover {{
+                            opacity: 0.5 !important;
+                            border-color: #999 !important;
+                            background-color: #f8f8f8 !important;
+                            transform: translateY(-1px) !important;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                        }}
+                        
+                        /* Активное состояние кнопки */
+                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"]:active {{
+                            transform: translateY(0px) !important;
+                            box-shadow: none !important;
+                            background-color: #eee !important;
+                        }}
+                        
+                        /* Hover эффект для ячейки - меняется только при наведении на саму ячейку */
+                        div[data-testid="column"]:nth-child({group+1}) div:first-child div:hover {{
                             transform: scale(1.03) !important;
                             border-color: #666 !important;
                             box-shadow: 0 0 5px rgba(0,0,0,0.1) !important;
-                        }}
-                        
-                        /* Активное состояние при клике */
-                        div[data-testid="column"]:nth-child({group+1}) div[data-testid="stVerticalBlock"] > div:first-child div:active {{
-                            border-color: #FF0000 !important;
-                            box-shadow: 0 0 8px rgba(255,0,0,0.3) !important;
                         }}
                         </style>
                         """, unsafe_allow_html=True)
@@ -196,8 +207,7 @@ def show_periodic_table(elements_data):
                     display: flex; 
                     flex-direction: column; 
                     justify-content: center;
-                    transition: all 0.2s;
-                    position: relative;">
+                    transition: all 0.2s;">
                     <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{symbol}</div>
                     <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
                     <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
@@ -209,48 +219,60 @@ def show_periodic_table(elements_data):
                 # Отображаем ячейку
                 st.markdown(cell_html, unsafe_allow_html=True)
                 
-                # Создаем невидимую кнопку поверх ячейки
-                container = st.container()
-                with container:
-                    if st.button(
-                        "",
-                        key=f"btn_lanth_{symbol}",
-                        help=f"Нажмите для информации о {element['Название']}",
-                        type="primary"
-                    ):
-                        st.session_state.selected_element = symbol
-                        st.rerun()
+                # Добавляем аккуратную невидимую кнопку под ячейкой
+                if st.button(
+                    " ",
+                    key=f"btn_lanth_{symbol}",
+                    help=f"Нажмите для информации о {element['Название']}",
+                    use_container_width=True
+                ):
+                    st.session_state.selected_element = symbol
+                    st.rerun()
                 
-                # CSS для позиционирования невидимой кнопки
+                # Стилизуем кнопку
                 st.markdown(f"""
                 <style>
-                /* Делаем кнопку невидимой и покрывающей ячейку */
-                button[data-testid="baseButton-primary"][aria-label="btn_lanth_{symbol}"] {{
-                    position: absolute !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100% !important;
-                    height: 65px !important;
-                    opacity: 0 !important;
-                    background: transparent !important;
-                    border: none !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    cursor: pointer !important;
-                    z-index: 100 !important;
+                /* Стили для кнопки под ячейкой лантаноида */
+                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"] {{
+                    background-color: white !important;
+                    border: 1px solid #ddd !important;
+                    color: transparent !important;
+                    height: 25px !important;
+                    min-height: 25px !important;
+                    max-height: 25px !important;
+                    padding: 0px 2px !important;
+                    margin: 1px !important;
+                    margin-top: 0px !important;
+                    border-radius: 3px !important;
+                    text-align: center !important;
+                    font-size: 1px !important;
+                    line-height: 1 !important;
+                    transition: all 0.2s !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    opacity: 0.3 !important;
+                }}
+                
+                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"]:hover {{
+                    opacity: 0.5 !important;
+                    border-color: #999 !important;
+                    background-color: #f8f8f8 !important;
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                }}
+                
+                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"]:active {{
+                    transform: translateY(0px) !important;
+                    box-shadow: none !important;
+                    background-color: #eee !important;
                 }}
                 
                 /* Hover эффект для ячейки лантаноида */
-                div[data-testid="column"]:nth-child({i+1}) div[data-testid="stVerticalBlock"] > div:first-child div:hover {{
+                div[data-testid="column"]:nth-child({i+1}) div:first-child div:hover {{
                     transform: scale(1.03) !important;
                     border-color: #666 !important;
                     box-shadow: 0 0 5px rgba(0,0,0,0.1) !important;
-                }}
-                
-                /* Активное состояние при клике */
-                div[data-testid="column"]:nth-child({i+1}) div[data-testid="stVerticalBlock"] > div:first-child div:active {{
-                    border-color: #FF0000 !important;
-                    box-shadow: 0 0 8px rgba(255,0,0,0.3) !important;
                 }}
                 </style>
                 """, unsafe_allow_html=True)
@@ -277,8 +299,7 @@ def show_periodic_table(elements_data):
                     display: flex; 
                     flex-direction: column; 
                     justify-content: center;
-                    transition: all 0.2s;
-                    position: relative;">
+                    transition: all 0.2s;">
                     <div style="font-weight: bold; font-size: 16px; line-height: 1.2;">{symbol}</div>
                     <div style="font-size: 10px; color: #666; line-height: 1.1;">{element['Порядковый номер']}</div>
                     <div style="font-size: 9px; color: #888; margin-top: 1px; line-height: 1.1;">
@@ -290,52 +311,63 @@ def show_periodic_table(elements_data):
                 # Отображаем ячейку
                 st.markdown(cell_html, unsafe_allow_html=True)
                 
-                # Создаем невидимую кнопку поверх ячейки
-                container = st.container()
-                with container:
-                    if st.button(
-                        "",
-                        key=f"btn_actin_{symbol}",
-                        help=f"Нажмите для информации о {element['Название']}",
-                        type="primary"
-                    ):
-                        st.session_state.selected_element = symbol
-                        st.rerun()
+                # Добавляем аккуратную невидимую кнопку под ячейкой
+                if st.button(
+                    " ",
+                    key=f"btn_actin_{symbol}",
+                    help=f"Нажмите для информации о {element['Название']}",
+                    use_container_width=True
+                ):
+                    st.session_state.selected_element = symbol
+                    st.rerun()
                 
-                # CSS для позиционирования невидимой кнопки
+                # Стилизуем кнопку
                 st.markdown(f"""
                 <style>
-                /* Делаем кнопку невидимой и покрывающей ячейку */
-                button[data-testid="baseButton-primary"][aria-label="btn_actin_{symbol}"] {{
-                    position: absolute !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100% !important;
-                    height: 65px !important;
-                    opacity: 0 !important;
-                    background: transparent !important;
-                    border: none !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    cursor: pointer !important;
-                    z-index: 100 !important;
+                /* Стили для кнопки под ячейкой актиноида */
+                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"] {{
+                    background-color: white !important;
+                    border: 1px solid #ddd !important;
+                    color: transparent !important;
+                    height: 25px !important;
+                    min-height: 25px !important;
+                    max-height: 25px !important;
+                    padding: 0px 2px !important;
+                    margin: 1px !important;
+                    margin-top: 0px !important;
+                    border-radius: 3px !important;
+                    text-align: center !important;
+                    font-size: 1px !important;
+                    line-height: 1 !important;
+                    transition: all 0.2s !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    opacity: 0.3 !important;
+                }}
+                
+                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"]:hover {{
+                    opacity: 0.5 !important;
+                    border-color: #999 !important;
+                    background-color: #f8f8f8 !important;
+                    transform: translateY(-1px) !important;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                }}
+                
+                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"]:active {{
+                    transform: translateY(0px) !important;
+                    box-shadow: none !important;
+                    background-color: #eee !important;
                 }}
                 
                 /* Hover эффект для ячейки актиноида */
-                div[data-testid="column"]:nth-child({i+1}) div[data-testid="stVerticalBlock"] > div:first-child div:hover {{
+                div[data-testid="column"]:nth-child({i+1}) div:first-child div:hover {{
                     transform: scale(1.03) !important;
                     border-color: #666 !important;
                     box-shadow: 0 0 5px rgba(0,0,0,0.1) !important;
                 }}
-                
-                /* Активное состояние при клике */
-                div[data-testid="column"]:nth-child({i+1}) div[data-testid="stVerticalBlock"] > div:first-child div:active {{
-                    border-color: #FF0000 !important;
-                    box-shadow: 0 0 8px rgba(255,0,0,0.3) !important;
-                }}
                 </style>
                 """, unsafe_allow_html=True)
-
 
 
 def show_element_info(element_symbol, elements_data):
@@ -760,6 +792,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
