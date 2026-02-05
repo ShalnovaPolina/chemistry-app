@@ -420,7 +420,7 @@ def show_element_info(element_symbol, elements_data):
         st.markdown(f"**{type_icon} Тип элемента:** {element_type}")
 
     with col2:
-        st.subheader("📊 Свойства элемента")
+        st.subheader("📊 Характеристика элемента")
         st.markdown("---")
         
         # Валентность с проверкой
@@ -498,7 +498,7 @@ def show_element_info(element_symbol, elements_data):
         else:
             st.markdown("**🔸 Электронная конфигурация:** не указана")
     with col3:
-        st.subheader("🧪 Свойства вещества")
+        st.subheader("🧪 Свойства простого вещества")
         st.markdown("---")
         
         # Агрегатное состояние с иконками
@@ -792,6 +792,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
