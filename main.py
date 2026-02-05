@@ -29,7 +29,7 @@ def get_element_color(element_type, symbol, number):
                    "Переходный металл", "Лантаноид", "Актиноид", "Постпереходный металл"]
     
     if element_type in metal_types:
-        return "#FFDAB9"  # Персиковый для металлов
+        return "#FFE4CC"  # Персиковый для металлов
     else:
         return "#E0FFFF"  # Голубой для неметаллов
 
@@ -792,6 +792,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
