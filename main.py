@@ -673,6 +673,7 @@ def get_elements_by_selection(selection_type, elements_data):
     return list(elements_data.keys())
 
 # Режим тестирования с сохранением статистики - ИЗМЕНЕНИЕ 2
+# Режим тестирования с сохранением статистики - ИЗМЕНЕНИЕ 2
 def show_test_mode(elements_data):
     st.header("🎯 Проверь свои знания")
     
@@ -683,7 +684,7 @@ def show_test_mode(elements_data):
             'total': 0,
             'current_question': None,
             'current_level': None,
-            'selected_elements': "Все элементы"  # ИЗМЕНЕНИЕ 2: добавляем выбранные элементы
+            'selected_elements': "Все элементы"
         }
     
     # ИЗМЕНЕНИЕ 2: Выбор элементов для тестирования
@@ -691,10 +692,13 @@ def show_test_mode(elements_data):
     
     selection_options = [
         "Все элементы",
-        "Первые 20 элементов", 
-        "Элементы 1-4 групп",
-        "Неметаллы",
-        "Металлы"
+        "Элементы 1-24",
+        "Элементы 25-50",
+        "Элементы 51-75",
+        "Элементы 76-100",
+        "Элементы 101-118",
+        "Металлы",
+        "Неметаллы"
     ]
     
     selected_elements = st.selectbox(
@@ -707,7 +711,46 @@ def show_test_mode(elements_data):
     st.session_state.test_data['selected_elements'] = selected_elements
     
     # Получаем список элементов в зависимости от выбора
-    available_elements = get_elements_by_selection(selected_elements, elements_data)
+    available_elements = []
+    
+    if selected_elements == "Все элементы":
+        available_elements = list(elements_data.keys())
+    
+    elif selected_elements == "Элементы 1-24":
+        available_elements = [sym for sym in elements_data.keys() 
+                            if 1 <= elements_data[sym]["Порядковый номер"] <= 24]
+    
+    elif selected_elements == "Элементы 25-50":
+        available_elements = [sym for sym in elements_data.keys() 
+                            if 25 <= elements_data[sym]["Порядковый номер"] <= 50]
+    
+    elif selected_elements == "Элементы 51-75":
+        available_elements = [sym for sym in elements_data.keys() 
+                            if 51 <= elements_data[sym]["Порядковый номер"] <= 75]
+    
+    elif selected_elements == "Элементы 76-100":
+        available_elements = [sym for sym in elements_data.keys() 
+                            if 76 <= elements_data[sym]["Порядковый номер"] <= 100]
+    
+    elif selected_elements == "Элементы 101-118":
+        available_elements = [sym for sym in elements_data.keys() 
+                            if 101 <= elements_data[sym]["Порядковый номер"] <= 118]
+    
+    elif selected_elements == "Неметаллы":
+        # Список известных неметаллов
+        nonmetals = ["H", "He", "B", "C", "N", "O", "F", "Ne", 
+                    "Si", "P", "S", "Cl", "Ar", "Ge", "As", 
+                    "Se", "Br", "Kr", "Sb", "Te", "I", "Xe", 
+                    "At", "Rn"]
+        available_elements = [sym for sym in nonmetals if sym in elements_data]
+    
+    elif selected_elements == "Металлы":
+        # Все элементы, кроме неметаллов и благородных газов
+        nonmetals_and_noble = ["H", "He", "B", "C", "N", "O", "F", "Ne", 
+                              "Si", "P", "S", "Cl", "Ar", "Ge", "As", 
+                              "Se", "Br", "Kr", "Sb", "Te", "I", "Xe", 
+                              "At", "Rn"]
+        available_elements = [sym for sym in elements_data.keys() if sym not in nonmetals_and_noble]
     
     # Показываем статистику выбора
     col1, col2 = st.columns(2)
@@ -740,7 +783,7 @@ def show_test_mode(elements_data):
 
             if level_key == "Лёгкий":
                 question = f"Какой символ у элемента **{element['Название']}**?"
-                # ИЗМЕНЕНИЕ 2: Используем только доступные элементы для вариантов ответов
+                # Используем только доступные элементы для вариантов ответов
                 other_elements = [k for k in available_elements if k != element_symbol]
                 if len(other_elements) >= 3:
                     options = [element_symbol] + random.sample(other_elements, 3)
@@ -760,7 +803,7 @@ def show_test_mode(elements_data):
 
             else:
                 question = f"Какая **электронная конфигурация** у **{element_symbol}**?"
-                # ИЗМЕНЕНИЕ 2: Используем только доступные элементы для вариантов ответов
+                # Используем только доступные элементы для вариантов ответов
                 other_elements = [k for k in available_elements if k != element_symbol]
                 if len(other_elements) >= 3:
                     other_configs = [elements_data[sym]['Электронная конфигурация'] for sym in random.sample(other_elements, 3)]
@@ -859,7 +902,7 @@ def show_test_mode(elements_data):
                 'total': 0,
                 'current_question': None,
                 'current_level': None,
-                'selected_elements': selected_elements  # Сохраняем выбор элементов
+                'selected_elements': selected_elements
             }
             st.rerun()
 
@@ -922,3 +965,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
