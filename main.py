@@ -623,57 +623,8 @@ def show_element_info(element_symbol, elements_data):
     if element_symbol in special_cases:
         st.warning(f"📝 **Примечание:** {special_cases[element_symbol]}")
 
-# ИЗМЕНЕНИЕ 2: Новая функция для выбора элементов для тестирования
-def get_elements_by_selection(selection_type, elements_data):
-    """
-    Возвращает список элементов в зависимости от выбора пользователя
-    """
-    if selection_type == "Все элементы":
-        return list(elements_data.keys())
-    
-    elif selection_type == "Первые 20 элементов":
-        return [sym for sym in elements_data.keys() 
-                if elements_data[sym]["Порядковый номер"] <= 20]
-    
-    elif selection_type == "Элементы 1-4 групп":
-        # Определяем номера элементов из 1-4 групп (I-A, II-A, III-A, IV-A)
-        groups_1_4 = []
-        for sym, data in elements_data.items():
-            num = data["Порядковый номер"]
-            # Щелочные металлы (1 группа)
-            if num in [3, 11, 19, 37, 55, 87]:  # Li, Na, K, Rb, Cs, Fr
-                groups_1_4.append(sym)
-            # Щелочноземельные металлы (2 группа)
-            elif num in [4, 12, 20, 38, 56, 88]:  # Be, Mg, Ca, Sr, Ba, Ra
-                groups_1_4.append(sym)
-            # Бор и алюминий (13 группа = III-A)
-            elif num in [5, 13, 31, 49, 81, 113]:  # B, Al, Ga, In, Tl, Nh
-                groups_1_4.append(sym)
-            # Углеродная группа (14 группа = IV-A)
-            elif num in [6, 14, 32, 50, 82, 114]:  # C, Si, Ge, Sn, Pb, Fl
-                groups_1_4.append(sym)
-        return groups_1_4
-    
-    elif selection_type == "Неметаллы":
-        # Список известных неметаллов
-        nonmetals = ["H", "He", "B", "C", "N", "O", "F", "Ne", 
-                    "Si", "P", "S", "Cl", "Ar", "Ge", "As", 
-                    "Se", "Br", "Kr", "Sb", "Te", "I", "Xe", 
-                    "At", "Rn"]
-        return [sym for sym in nonmetals if sym in elements_data]
-    
-    elif selection_type == "Металлы":
-        # Все элементы, кроме неметаллов и благородных газов
-        nonmetals_and_noble = ["H", "He", "B", "C", "N", "O", "F", "Ne", 
-                              "Si", "P", "S", "Cl", "Ar", "Ge", "As", 
-                              "Se", "Br", "Kr", "Sb", "Te", "I", "Xe", 
-                              "At", "Rn"]
-        return [sym for sym in elements_data.keys() if sym not in nonmetals_and_noble]
-    
-    return list(elements_data.keys())
 
-# Режим тестирования с сохранением статистики - ИЗМЕНЕНИЕ 2
-# Режим тестирования с сохранением статистики - ИЗМЕНЕНИЕ 2
+# Режим тестирования с сохранением статистики 
 def show_test_mode(elements_data):
     st.header("🎯 Проверь свои знания")
     
@@ -965,4 +916,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
