@@ -432,11 +432,11 @@ def show_periodic_table(elements_data):
                             st.session_state.selected_element = element_symbol
                             st.rerun()
                             
-                    else:
-                         st.write("")
                 else:
-                    # Пустая ячейка
-                    st.markdown('<div style="height: 65px;"></div>', unsafe_allow_html=True)
+                     st.write("")
+            else:
+                # Пустая ячейка
+                st.markdown('<div style="height: 65px;"></div>', unsafe_allow_html=True)
     
     if element_symbol not in elements_data:
         return
@@ -968,6 +968,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
