@@ -79,6 +79,7 @@ def create_periodic_table_layout():
     return positions, lanthanoids, actinoids
 
 # Отображение компактной таблицы - ЯЧЕЙКИ С НЕВИДИМЫМИ КНОПКАМИ
+# Отображение компактной таблицы - ЯЧЕЙКИ С ВИДИМЫМИ КНОПКАМИ
 def show_periodic_table(elements_data):
     positions, lanthanoids, actinoids = create_periodic_table_layout()
     
@@ -91,9 +92,8 @@ def show_periodic_table(elements_data):
                     element_symbol = positions[(period, group)]
                     if element_symbol in elements_data:
                         element = elements_data[element_symbol]
-                        # ИЗМЕНЕНИЕ 1: Тип элемента больше не в структуре, используем словарь для цвета
-                        element_type = "Неметалл"  # Базовое значение
                         # Определяем тип для цвета на основе группы
+                        element_type = "Неметалл"  # Базовое значение
                         if group in [0, 1]:  # Щелочные и щелочноземельные металлы
                             element_type = "Металл"
                         elif 2 <= group <= 11:  # Переходные металлы
@@ -103,7 +103,7 @@ def show_periodic_table(elements_data):
                         
                         color = get_element_color(element_type, element_symbol, element["Порядковый номер"])
                         
-                        # Создаем красивую ячейку с помощью HTML (как в оригинале)
+                        # Создаем красивую ячейку с помощью HTML
                         cell_html = f"""
                         <div style="
                             background-color: {color}; 
@@ -128,9 +128,9 @@ def show_periodic_table(elements_data):
                         # Отображаем ячейку
                         st.markdown(cell_html, unsafe_allow_html=True)
                         
-                        # Добавляем аккуратную невидимую кнопку под ячейкой
+                        # ВИДИМАЯ КНОПКА с названием элемента
                         if st.button(
-                            " ",  # Пробел, чтобы кнопка была видимой, но минимальной
+                            f"🔍 {element['Название']}",  # Теперь кнопка видимая с названием элемента
                             key=f"btn_{element_symbol}_{period}_{group}",
                             help=f"Нажмите для информации о {element['Название']}",
                             use_container_width=True
@@ -138,48 +138,38 @@ def show_periodic_table(elements_data):
                             st.session_state.selected_element = element_symbol
                             st.rerun()
                         
-                        # Стилизуем кнопку, чтобы она была аккуратной и невидимой
+                        # Стили для кнопки - убираем стили, делающие её невидимой
                         st.markdown(f"""
                         <style>
-                        /* Стили для кнопки под ячейкой - компактные и невидимые */
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"] {{
-                            background-color: white !important;
-                            border: 1px solid #ddd !important;
-                            color: transparent !important;
-                            height: 25px !important;
-                            min-height: 25px !important;
-                            max-height: 25px !important;
-                            padding: 0px 2px !important;
-                            margin: 1px !important;
-                            margin-top: 0px !important;
-                            border-radius: 3px !important;
-                            text-align: center !important;
-                            font-size: 1px !important;
-                            line-height: 1 !important;
+                        /* Стили для кнопки под ячейкой */
+                        button[data-testid="baseButton-secondary"][key="btn_{element_symbol}_{period}_{group}"] {{
+                            background-color: #f0f2f6 !important;
+                            border: 1px solid #ccc !important;
+                            color: #333 !important;
+                            height: 30px !important;
+                            min-height: 30px !important;
+                            padding: 0px 5px !important;
+                            margin: 2px 0 !important;
+                            border-radius: 4px !important;
+                            font-size: 12px !important;
+                            font-weight: 500 !important;
                             transition: all 0.2s !important;
-                            display: flex !important;
-                            align-items: center !important;
-                            justify-content: center !important;
-                            opacity: 0.3 !important;
+                            opacity: 1 !important;
                         }}
                         
-                        /* Hover эффект для кнопки - становится немного заметнее */
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"]:hover {{
-                            opacity: 0.5 !important;
+                        button[data-testid="baseButton-secondary"][key="btn_{element_symbol}_{period}_{group}"]:hover {{
+                            background-color: #e0e2e6 !important;
                             border-color: #999 !important;
-                            background-color: #f8f8f8 !important;
                             transform: translateY(-1px) !important;
-                            box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
                         }}
                         
-                        /* Активное состояние кнопки */
-                        button[data-testid="baseButton-secondary"][aria-label="btn_{element_symbol}_{period}_{group}"]:active {{
+                        button[data-testid="baseButton-secondary"][key="btn_{element_symbol}_{period}_{group}"]:active {{
                             transform: translateY(0px) !important;
-                            box-shadow: none !important;
-                            background-color: #eee !important;
+                            background-color: #d0d2d6 !important;
                         }}
                         
-                        /* Hover эффект для ячейки - меняется только при наведении на саму ячейку */
+                        /* Hover эффект для ячейки */
                         div[data-testid="column"]:nth-child({group+1}) div:first-child div:hover {{
                             transform: scale(1.03) !important;
                             border-color: #666 !important;
@@ -194,7 +184,7 @@ def show_periodic_table(elements_data):
                     # Пустая ячейка
                     st.markdown('<div style="height: 65px;"></div>', unsafe_allow_html=True)
     
-    # Лантаноиды - компактный вид
+    # Лантаноиды - компактный вид с видимыми кнопками
     st.markdown("---")
     st.markdown("**Лантаноиды:**")
     lan_cols = st.columns(14)
@@ -202,7 +192,6 @@ def show_periodic_table(elements_data):
         with lan_cols[i]:
             if symbol in elements_data:
                 element = elements_data[symbol]
-                # Для лантаноидов используем цвет металлов
                 color = get_element_color("Лантаноид", symbol, element["Порядковый номер"])
                 
                 # Создаем красивую ячейку для лантаноида
@@ -230,9 +219,9 @@ def show_periodic_table(elements_data):
                 # Отображаем ячейку
                 st.markdown(cell_html, unsafe_allow_html=True)
                 
-                # Добавляем аккуратную невидимую кнопку под ячейкой
+                # ВИДИМАЯ КНОПКА с названием элемента
                 if st.button(
-                    " ",
+                    f"🔍 {element['Название']}",
                     key=f"btn_lanth_{symbol}",
                     help=f"Нажмите для информации о {element['Название']}",
                     use_container_width=True
@@ -240,46 +229,36 @@ def show_periodic_table(elements_data):
                     st.session_state.selected_element = symbol
                     st.rerun()
                 
-                # Стилизуем кнопку
+                # Стили для кнопки лантаноида
                 st.markdown(f"""
                 <style>
-                /* Стили для кнопки под ячейкой лантаноида */
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"] {{
-                    background-color: white !important;
-                    border: 1px solid #ddd !important;
-                    color: transparent !important;
-                    height: 25px !important;
-                    min-height: 25px !important;
-                    max-height: 25px !important;
-                    padding: 0px 2px !important;
-                    margin: 1px !important;
-                    margin-top: 0px !important;
-                    border-radius: 3px !important;
-                    text-align: center !important;
-                    font-size: 1px !important;
-                    line-height: 1 !important;
+                button[data-testid="baseButton-secondary"][key="btn_lanth_{symbol}"] {{
+                    background-color: #f0f2f6 !important;
+                    border: 1px solid #ccc !important;
+                    color: #333 !important;
+                    height: 30px !important;
+                    min-height: 30px !important;
+                    padding: 0px 5px !important;
+                    margin: 2px 0 !important;
+                    border-radius: 4px !important;
+                    font-size: 12px !important;
+                    font-weight: 500 !important;
                     transition: all 0.2s !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    opacity: 0.3 !important;
+                    opacity: 1 !important;
                 }}
                 
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"]:hover {{
-                    opacity: 0.5 !important;
+                button[data-testid="baseButton-secondary"][key="btn_lanth_{symbol}"]:hover {{
+                    background-color: #e0e2e6 !important;
                     border-color: #999 !important;
-                    background-color: #f8f8f8 !important;
                     transform: translateY(-1px) !important;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
                 }}
                 
-                button[data-testid="baseButton-secondary"][aria-label="btn_lanth_{symbol}"]:active {{
+                button[data-testid="baseButton-secondary"][key="btn_lanth_{symbol}"]:active {{
                     transform: translateY(0px) !important;
-                    box-shadow: none !important;
-                    background-color: #eee !important;
+                    background-color: #d0d2d6 !important;
                 }}
                 
-                /* Hover эффект для ячейки лантаноида */
                 div[data-testid="column"]:nth-child({i+1}) div:first-child div:hover {{
                     transform: scale(1.03) !important;
                     border-color: #666 !important;
@@ -288,14 +267,13 @@ def show_periodic_table(elements_data):
                 </style>
                 """, unsafe_allow_html=True)
     
-    # Актиноиды - компактный вид
+    # Актиноиды - компактный вид с видимыми кнопками
     st.markdown("**Актиноиды:**")
     act_cols = st.columns(14)
     for i, symbol in enumerate(actinoids):
         with act_cols[i]:
             if symbol in elements_data:
                 element = elements_data[symbol]
-                # Для актиноидов используем цвет металлов
                 color = get_element_color("Актиноид", symbol, element["Порядковый номер"])
                 
                 # Создаем красивую ячейку для актиноида
@@ -323,9 +301,9 @@ def show_periodic_table(elements_data):
                 # Отображаем ячейку
                 st.markdown(cell_html, unsafe_allow_html=True)
                 
-                # Добавляем аккуратную невидимую кнопку под ячейкой
+                # ВИДИМАЯ КНОПКА с названием элемента
                 if st.button(
-                    " ",
+                    f"🔍 {element['Название']}",
                     key=f"btn_actin_{symbol}",
                     help=f"Нажмите для информации о {element['Название']}",
                     use_container_width=True
@@ -333,46 +311,36 @@ def show_periodic_table(elements_data):
                     st.session_state.selected_element = symbol
                     st.rerun()
                 
-                # Стилизуем кнопку
+                # Стили для кнопки актиноида
                 st.markdown(f"""
                 <style>
-                /* Стили для кнопки под ячейкой актиноида */
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"] {{
-                    background-color: white !important;
-                    border: 1px solid #ddd !important;
-                    color: transparent !important;
-                    height: 25px !important;
-                    min-height: 25px !important;
-                    max-height: 25px !important;
-                    padding: 0px 2px !important;
-                    margin: 1px !important;
-                    margin-top: 0px !important;
-                    border-radius: 3px !important;
-                    text-align: center !important;
-                    font-size: 1px !important;
-                    line-height: 1 !important;
+                button[data-testid="baseButton-secondary"][key="btn_actin_{symbol}"] {{
+                    background-color: #f0f2f6 !important;
+                    border: 1px solid #ccc !important;
+                    color: #333 !important;
+                    height: 30px !important;
+                    min-height: 30px !important;
+                    padding: 0px 5px !important;
+                    margin: 2px 0 !important;
+                    border-radius: 4px !important;
+                    font-size: 12px !important;
+                    font-weight: 500 !important;
                     transition: all 0.2s !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    opacity: 0.3 !important;
+                    opacity: 1 !important;
                 }}
                 
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"]:hover {{
-                    opacity: 0.5 !important;
+                button[data-testid="baseButton-secondary"][key="btn_actin_{symbol}"]:hover {{
+                    background-color: #e0e2e6 !important;
                     border-color: #999 !important;
-                    background-color: #f8f8f8 !important;
                     transform: translateY(-1px) !important;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
                 }}
                 
-                button[data-testid="baseButton-secondary"][aria-label="btn_actin_{symbol}"]:active {{
+                button[data-testid="baseButton-secondary"][key="btn_actin_{symbol}"]:active {{
                     transform: translateY(0px) !important;
-                    box-shadow: none !important;
-                    background-color: #eee !important;
+                    background-color: #d0d2d6 !important;
                 }}
                 
-                /* Hover эффект для ячейки актиноида */
                 div[data-testid="column"]:nth-child({i+1}) div:first-child div:hover {{
                     transform: scale(1.03) !important;
                     border-color: #666 !important;
@@ -380,8 +348,6 @@ def show_periodic_table(elements_data):
                 }}
                 </style>
                 """, unsafe_allow_html=True)
-
-
 def show_element_info(element_symbol, elements_data):
     if element_symbol not in elements_data:
         return
@@ -913,6 +879,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
