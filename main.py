@@ -433,7 +433,7 @@ def show_periodic_table(elements_data):
                             st.rerun()
                             
                     else:
-                        st.write("")
+                         st.write("")
                 else:
                     # Пустая ячейка
                     st.markdown('<div style="height: 65px;"></div>', unsafe_allow_html=True)
@@ -968,6 +968,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
