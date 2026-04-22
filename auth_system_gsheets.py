@@ -1,4 +1,4 @@
-# auth_system_gsheets.py
+auth_system_gsheets.py
 import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
@@ -8,17 +8,15 @@ import json
 
 # ==================== НАСТРОЙКА GOOGLE SHEETS ====================
 
-# 1. Области доступа (разрешения)
+#Области доступа (разрешения)
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",  # Доступ к таблицам
     "https://www.googleapis.com/auth/drive.file"     # Доступ к файлам
 ]
 
-# 2. ID вашей Google таблицы (ЗАМЕНИТЕ НА СВОЙ!)
-# Как найти: откройте таблицу → адресная строка → часть между /d/ и /edit
 SPREADSHEET_ID = "16eAX7om2gzcttvDGUMKa_xwOSwsowOq7QOiLH01zI2k"
 
-# 3. Название листа (вкладки) в таблице
+# Название листа (вкладки) в таблице
 SHEET_NAME = "Лист1"
 
 # ==================== ФУНКЦИИ ДЛЯ РАБОТЫ С GOOGLE SHEETS ====================
