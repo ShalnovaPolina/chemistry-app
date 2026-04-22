@@ -196,7 +196,7 @@ def show_periodic_table(elements_data):
                     # Пустая ячейка
                     st.markdown('<div style="height: 65px;"></div>', unsafe_allow_html=True)
     
-    # Лантаноиды - компактный вид
+    #Лантаноиды компактный вид
     st.markdown("---")
     st.markdown("**Лантаноиды:**")
     lan_cols = st.columns(14)
@@ -204,10 +204,10 @@ def show_periodic_table(elements_data):
         with lan_cols[i]:
             if symbol in elements_data:
                 element = elements_data[symbol]
-                # Для лантаноидов используем цвет металлов
+                #для лантаноидов использую цвет металлов
                 color = get_element_color("Лантаноид", symbol, element["Порядковый номер"])
                 
-                # Создаем красивую ячейку для лантаноида
+                #создаю ячейку для лантаноида
                 cell_html = f"""
                 <div style="
                     background-color: {color}; 
@@ -229,10 +229,10 @@ def show_periodic_table(elements_data):
                 </div>
                 """
                 
-                # Отображаем ячейку
+                #Отображаю ячейку
                 st.markdown(cell_html, unsafe_allow_html=True)
                 
-                # Добавляем аккуратную невидимую кнопку под ячейкой
+                #Добавляю невидимую кнопку под ячейкой
                 if st.button(
                     " ",
                     key=f"btn_lanth_{symbol}",
@@ -242,7 +242,7 @@ def show_periodic_table(elements_data):
                     st.session_state.selected_element = symbol
                     st.rerun()
                 
-                # Стилизуем кнопку
+                #Стилизую кнопку
                 st.markdown(f"""
                 <style>
                 /* Стили для кнопки под ячейкой лантаноида */
@@ -290,7 +290,7 @@ def show_periodic_table(elements_data):
                 </style>
                 """, unsafe_allow_html=True)
     
-    # Актиноиды - компактный вид
+    #Актиноиды компактный вид
     st.markdown("**Актиноиды:**")
     act_cols = st.columns(14)
     for i, symbol in enumerate(actinoids):
@@ -433,11 +433,11 @@ def show_element_info(element_symbol, elements_data):
         
         st.markdown(f"**⚖️ Относительная атомная масса:** {mass_display}{round_info}")
         
-        # Тип элемента - определяем на основе группы в таблице
+        #Тип элемента определяем на основе группы в таблице
         element_type = "Неизвестно"
         element_number = element['Порядковый номер']
         
-        # Простое определение типа для отображения (не для цвета)
+        #простое определение типа для отображения (не для цвета)
         if element_number <= 2:
             if element_symbol == "H":
                 element_type = "Неметалл"
@@ -454,7 +454,6 @@ def show_element_info(element_symbol, elements_data):
             else:
                 element_type = "Неметалл"
         else:
-            # Более сложные элементы - упрощённо
             if element_symbol in ["He", "Ne", "Ar", "Kr", "Xe", "Rn"]:
                 element_type = "Благородный газ"
             elif element_symbol in ["B", "C", "Si", "N", "P", "As", "O", "S", "Se", "Te", "F", "Cl", "Br", "I", "At"]:
@@ -479,7 +478,7 @@ def show_element_info(element_symbol, elements_data):
         st.subheader("📊 Характеристика элемента")
         st.markdown("---")
         
-        # Валентность с проверкой
+        #Валентность с проверкой
         valency = element.get('Валентность', [])
         if valency and valency[0] not in ["-", "", "0", 0]:
             # Фильтруем некорректные значения
@@ -495,10 +494,10 @@ def show_element_info(element_symbol, elements_data):
             else:
                 st.markdown("**🔸 Валентность:** не указана")
         
-        # Степень окисления с цветовой маркировкой
+        #Степень окисления с цветовой маркировкой
         oxidation = element.get('Степень окисления', [])
         if oxidation:
-            # Разделяем на положительные и отрицательные
+            #Разделяю на положительные и отрицательные
             positive = []
             negative = []
             neutral = []
@@ -539,7 +538,7 @@ def show_element_info(element_symbol, elements_data):
         else:
             st.markdown("**🔸 Степень окисления:** не указана")
         
-        # Электронная конфигурация с форматированием
+        #Электронная конфигурация с форматированием
         electron_config = element.get('Электронная конфигурация', '')
         if electron_config:
             st.markdown(f"**🔸 Электронная конфигурация:**")
@@ -568,7 +567,7 @@ def show_element_info(element_symbol, elements_data):
                 if description:
                     st.markdown(f"*{description[:100]}...*" if len(description) > 100 else f"*{description}*")
         
-        # Высший оксид
+        #Высший оксид
         higher_oxide = element.get('Высший оксид', {})
         if higher_oxide and isinstance(higher_oxide, dict):
             oxide_formula = higher_oxide.get('Формула', '')
@@ -591,7 +590,7 @@ def show_element_info(element_symbol, elements_data):
                 if oxide_nature:
                     st.markdown(f"*Характер: {oxide_nature}*")
         
-        # Летучее водородное соединение
+        #Летучее водородное соединение
         volatile_hydrogen = element.get('Летучее водородное соединение', {})
         if volatile_hydrogen and isinstance(volatile_hydrogen, dict):
             vh_formula = volatile_hydrogen.get('Формула', '')
@@ -602,7 +601,7 @@ def show_element_info(element_symbol, elements_data):
                 if vh_description:
                     st.markdown(f"*{vh_description[:100]}...*" if len(vh_description) > 100 else f"*{vh_description}*")
     
-    # Дополнительная информация (если нужно)
+    #Дополнительная информация (если нужно)
     st.markdown("---")
     
     # Проверка согласованности данных
@@ -610,7 +609,7 @@ def show_element_info(element_symbol, elements_data):
     if isinstance(higher_oxide, dict) and "предположительно" in higher_oxide.get('Характер', '').lower():
         st.info("💡 *Характер оксида предположительный, так как элемент синтетический или малоизучен*")
     
-    # Особые случаи
+    #особые случаи
     special_cases = {
         "O": "Кислород является компонентом оксидов, сам по себе не имеет характера оксида",
         "F": "Фтор образует только OF₂, который является нетипичным оксидом",
@@ -623,12 +622,12 @@ def show_element_info(element_symbol, elements_data):
         st.warning(f"📝 **Примечание:** {special_cases[element_symbol]}")
 
 
-# Режим тестирования с сохранением статистики 
+#режим тестирования с сохранением статистики 
 def show_test_mode(elements_data):
     st.header("🎯 Проверь свои знания")
     
-    # Инициализация сессии для теста
-    if 'test_data' not in st.session_state:
+    #Инициализация сессии для теста
+    if 'test_data' not in st.session_state: #проверяет, существует ли в st.session_state объект с ключом 'test_data', и если нет — создаёт его с начальными значениями
         st.session_state.test_data = {
             'score': 0,
             'total': 0,
@@ -637,7 +636,7 @@ def show_test_mode(elements_data):
             'selected_elements': "Все элементы"
         }
     
-    # ИЗМЕНЕНИЕ 2: Выбор элементов для тестирования
+    #выбор элементов для тестирования
     st.subheader("📋 Выберите элементы для изучения")
     
     selection_options = [
@@ -660,7 +659,7 @@ def show_test_mode(elements_data):
     
     st.session_state.test_data['selected_elements'] = selected_elements
     
-    # Получаем список элементов в зависимости от выбора
+    #Получаем список элементов в зависимости от выбора
     available_elements = []
     
     if selected_elements == "Все элементы":
@@ -695,7 +694,7 @@ def show_test_mode(elements_data):
         available_elements = [sym for sym in nonmetals if sym in elements_data]
     
     elif selected_elements == "Металлы":
-        # Все элементы, кроме неметаллов и благородных газов
+        #Все элементы, кроме неметаллов и благородных газов
         nonmetals_and_noble = ["H", "He", "B", "C", "N", "O", "F", "Ne", 
                               "Si", "P", "S", "Cl", "Ar", "Ge", "As", 
                               "Se", "Br", "Kr", "Sb", "Te", "I", "Xe", 
@@ -711,7 +710,7 @@ def show_test_mode(elements_data):
     
     st.markdown("---")
     
-    # Уровень сложности
+    #Уровень сложности
     level = st.radio(
         "**Выберите уровень сложности:**",
         ["🟢 Лёгкий", "🟡 Средний", "🔴 Сложный"],
